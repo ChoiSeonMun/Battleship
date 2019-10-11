@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class Hex
 {
+    const float DX = 0.8f;
+    const float DY = 0.69f;
+    const float H_DX = DX / 2f;
+    const float R_DX = 1f / 0.8f;
+    const float R_DY = 1f / 0.69f;
+
     public float x, y;
 
     public Hex(float x, float y)
@@ -17,16 +23,15 @@ public class Hex
         return $"Hex({x}, {y})";
     }
 
-    public static Vector2 HexToSqr(Vector2 pos)
+    public static Vector2 HexToSqr(Hex hex)
     {
-        return HexToSqr(pos.x, pos.y);
+        return HexToSqr(hex.x, hex.y);
     }
     public static Vector2 HexToSqr(float x, float y)
     {
-        float hexX = x * 0.8f + (y % 2 != 0 ? 0.4f : 0f);
-        float hexY = y * 0.69f;
-        Vector2 res = new Vector2(hexX, hexY);
-        return res;
+        float hexX = x * DX + (y % 2 != 0 ? H_DX : 0f);
+        float hexY = y * DY;
+        return new Vector2(hexX, hexY);
     }
     public static Hex SqrToHex(Vector2 pos)
     {
@@ -34,9 +39,20 @@ public class Hex
     }
     public static Hex SqrToHex(float x, float y)
     {
-        float sqrY = y / 0.69f;
-        float sqrX = sqrY % 2 != 0 ? (x - 0.4f) / 0.8f : x / 0.8f;
-        Hex res = new Hex(sqrX, sqrY);
-        return res;
+        float sqrY = y * R_DY;
+        float sqrX = sqrY % 2 != 0 ? (x - H_DX) * R_DX : x * R_DX;
+        return new Hex(sqrX, sqrY);
+    }
+
+    /// <summary>
+    /// 주어진 position을 육각 타일 좌표에 맞춥니다.
+    /// </summary>
+    public static Vector2 SnapToTile(Vector2 pos)
+    {
+        throw new System.NotImplementedException();
+        float hexX = (int)(pos.x * R_DX);
+        float hexY = (int)(pos.y * R_DY);
+        Debug.Log(HexToSqr(hexX, hexY));
+        return HexToSqr(hexX, hexY);
     }
 }

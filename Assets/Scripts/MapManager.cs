@@ -5,81 +5,88 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    const int MAX_W = 50;
-    const int MAX_H = 50;
-    const string MAP_PATH = @".\Assets\Maps\map_test.txt";
+    public static MapManager instance;
+    static readonly int shipTypesCount = System.Enum.GetNames(typeof(Ship.EShip)).Length;
 
     [Header("◆ Prefabs")]
     [SerializeField]
     private GameObject hexOcean = null;
     [SerializeField]
+    private GameObject hexShore = null;
+    [SerializeField]
     private GameObject hexIsland = null;
     [SerializeField]
     private GameObject hexLand = null;
 
-    int w, h;
-    int[,] cells;
 
-    void Start()
+    int width, height;
+    int[,] tiles;
+    public int[] ShipCounts { get; private set; } = new int[shipTypesCount];
+    int[,] ships;
+
+    void Awake()
     {
-        GenerateMap(16, 9);
+        if (instance == null) instance = this;
+        else Destroy(gameObject);
     }
 
-    void GenerateMap(int w, int h)
+    public void GenerateMap()
     {
-        this.w = w;
-        this.h = h;
-        cells = new int[h, w];
-
-        LoadMap(MAP_PATH);
-
-        for (int y = 0; y < h; y++)
+        for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < w; x++)
+            for (int x = 0; x < width; x++)
             {
                 Vector2 pos = Hex.HexToSqr(x, y);
-                switch (cells[y, x])
+                switch (tiles[y, x])
                 {
-                    case 1:
+                    case 1:  // 바다
                         Instantiate(hexOcean, pos, Quaternion.identity, transform);
                         break;
-                    case 2:
+                    case 2:  // 연안
+                        Instantiate(hexShore, pos, Quaternion.identity, transform);
+                        break;
+                    case 3:  // 섬
                         Instantiate(hexIsland, pos, Quaternion.identity, transform);
                         break;
-                    case 3:
+                    case 4:  // 육지
                         Instantiate(hexLand, pos, Quaternion.identity, transform);
                         break;
                     default:
-                        throw new System.ComponentModel.InvalidEnumArgumentException($"※ Unhandled tile val: {cells[y, x].ToString()}");
+                        throw new System.ComponentModel.InvalidEnumArgumentException($"※ Unhandled tile val: {tiles[y, x].ToString()}");
                 }
             }
         }
     }
 
-    void SaveMap()
+    public void SaveMap(string path)
     {
-        using (StreamWriter streamWriter = new StreamWriter(MAP_PATH))
+        using (StreamWriter streamWriter = new StreamWriter(path))
         {
-            streamWriter.WriteLine($"{w} {h}");
-            for (int y = 0; y < h; y++)
+            streamWriter.WriteLine($"{width} {height}");
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < w; x++)
+                for (int x = 0; x < width; x++)
                 {
-                    streamWriter.Write(string.Join(" ", cells[y, x]));
+                    streamWriter.Write(string.Join(" ", tiles[y, x]));
                 }
                 streamWriter.WriteLine();
             }
         }
     }
-    void LoadMap(string path)
+    public void LoadMap(string path)
     {
         using (StreamReader streamReader = new StreamReader(path))
         {
             string line = streamReader.ReadLine();
+            ShipCounts = System.Array.ConvertAll(line.Trim().Split(), s => int.Parse(s));
+
+            line = streamReader.ReadLine();
             int[] wh = System.Array.ConvertAll(line.Trim().Split(), s => int.Parse(s));
-            w = wh[0];
-            h = wh[1];
-            Debug.Log(w + ", " + h);
+            width = wh[0];
+            height = wh[1];
+            tiles = new int[height, width];
+
+            Debug.Log($"Loading map: B{ShipCounts[(int)Ship.EShip.BATTLESHIP]} C{ShipCounts[(int)Ship.EShip.CRUISER]} D{ShipCounts[(int)Ship.EShip.DESTROYER]} {width}X{height}");
 
             int y = 0;
             while ((line = streamReader.ReadLine()) != null)
@@ -88,23 +95,23 @@ public class MapManager : MonoBehaviour
                 int x = 0;
                 foreach (int val in vals)
                 {
-                    cells[y, x] = val;
+                    tiles[y, x] = val;
                     x++;
                 }
                 y++;
+                if (y == height) break;  // 이후 파일 내용 무시
             }
         }
+    }
 
-        // DEBUG
-        string str = "";
-        for(int y = 0; y < h; y++)
-        {
-            for (int x = 0; x < w; x++)
-            {
-                str += cells[y, x].ToString() + " ";
-            }
-            str += "\n";
-        }
-        Debug.Log(str);
+    public void DecreaseShipCount(Ship.EShip eShip)
+    {
+        if ((--ShipCounts[(int)eShip]) < 0) throw new System.Exception("※ ShipCount is lower than 0");
+        UIManager.instance.UpdatePlacementPhase();
+    }
+    public void IncreaseShipCount(Ship.EShip eShip)
+    {
+        ShipCounts[(int)eShip]++;
+        UIManager.instance.UpdatePlacementPhase();
     }
 }

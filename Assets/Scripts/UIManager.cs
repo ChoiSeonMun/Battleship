@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -8,7 +9,15 @@ public class UIManager : MonoBehaviour
 
     [Header("◆ Instances")]
     [SerializeField]
-    private GameObject hexHighlighter = null;
+    private GameObject selectHighlighter = null;
+    [SerializeField]
+    private GameObject attackHighlighter = null;
+    [SerializeField]
+    private Text battleshipCountText = null;
+    [SerializeField]
+    private Text cruiserCountText = null;
+    [SerializeField]
+    private Text destroyerCountText = null;
 
     void Awake()
     {
@@ -16,13 +25,37 @@ public class UIManager : MonoBehaviour
         else Destroy(gameObject);
     }
     
-    public void Highlight(Hex hex)
+    public void UpdatePlacementPhase()
     {
-        hexHighlighter.SetActive(true);
-        hexHighlighter.transform.position = Hex.HexToSqr(hex.x, hex.y);
+        // TODO: Text 필드 전부 지우고 transform.GetComponentInChildren<Text>()으로 찾아서 소프트코딩
+        battleshipCountText.text = MapManager.instance.ShipCounts[0].ToString();
+        cruiserCountText.text = MapManager.instance.ShipCounts[1].ToString();
+        destroyerCountText.text = MapManager.instance.ShipCounts[2].ToString();
     }
-    public void Unhighlight()
+    
+    public void SelectHighlight(Hex hex)
     {
-        hexHighlighter.SetActive(false);
+        UnhighlightAll();
+        selectHighlighter.SetActive(true);
+        selectHighlighter.transform.position = Hex.HexToSqr(hex);
+    }
+    public void AttackHighlight(Hex hex)
+    {
+        UnhighlightAll();
+        attackHighlighter.SetActive(true);
+        attackHighlighter.transform.position = Hex.HexToSqr(hex);
+    }
+    public void SelectUnhighlight()
+    {
+        selectHighlighter.SetActive(false);
+    }
+    public void AttackUnhighlight()
+    {
+        attackHighlighter.SetActive(false);
+    }
+    public void UnhighlightAll()
+    {
+        SelectUnhighlight();
+        AttackUnhighlight();
     }
 }
