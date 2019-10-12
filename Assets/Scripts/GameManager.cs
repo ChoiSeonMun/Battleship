@@ -5,9 +5,9 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    public enum EMode { NONE, SELECT, ATTACK, END };
+    public enum EMode { NONE, PLACE, SELECT, ATTACK, END };
 
-    public EMode Mode { get; private set; } = EMode.SELECT;
+    public EMode Mode { get; private set; } = EMode.PLACE;
 
     void Awake()
     {

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8527617445620638071}
   - component: {fileID: 8527617445620638068}
   m_Layer: 0
-  m_Name: Hex Select-Highlighter
+  m_Name: Hex Highlighter-Select
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 7778301391270917815}
   - component: {fileID: 6766103103980725910}
   m_Layer: 0
-  m_Name: crosshair031
+  m_Name: Crosshair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

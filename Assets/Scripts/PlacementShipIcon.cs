@@ -9,22 +9,15 @@ public class PlacementShipIcon : MonoBehaviour
     [Header("Ship Prefab")]
     public GameObject ship;
 
-    public void BeginDrag()
+    public void ChooseShip()
     {
         if (MapManager.instance.ShipCounts[(int)eShip] > 0)
         {
-            MapManager.instance.DecreaseShipCount(eShip);
-
-            Vector3 pos = Camera.main.ScreenToWorldPoint(transform.position);
-            pos.z = 0f;
-            GameObject shipInst = Instantiate(ship, pos, Quaternion.identity, null);
-            DragManager.instance.BeginDrag(eShip, shipInst);
+            PlaceManager.instance.ChooseShip(eShip, ship);
         }
         else
         {
-            Debug.Log($"Cannot drag {ship.name}: ShipCount is 0");
+            Debug.Log($"{eShip}: 더 이상 배치할 수 없습니다.");
         }
-
-        
     }
 }
