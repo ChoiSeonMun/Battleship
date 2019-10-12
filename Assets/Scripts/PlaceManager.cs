@@ -9,16 +9,16 @@ public class PlaceManager : MonoBehaviour
 {
     public static PlaceManager instance;
 
-    Ship.EShip eShip;
+    public Ship.EShip PlacingEShip { get; private set; }
     GameObject shipObj;
     GameObject shipInst;
     bool hasPlaced = false;
     Hex placingHex;
-    bool isDragging = false;
+    public bool IsDragging { get; private set; } = false;
     Hex.EDirec eDirec;
 
     Hex chosenHex;
-    Ship.EShip chosenEShip;
+    public Ship.EShip ChosenEShip { get; private set; }
 
     void Awake()
     {
@@ -29,7 +29,7 @@ public class PlaceManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            if (isDragging)
+            if (IsDragging)
             {
                 Hex mouseToHex = Hex.MouseToHex();
                 if (mouseToHex != null && mouseToHex.Equals(placingHex))
@@ -52,24 +52,32 @@ public class PlaceManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Hex mouseToHex = Hex.MouseToHex();
-            if (mouseToHex != null && mouseToHex.Equals(placingHex))
+            Hex hex = Hex.MouseToHex();
+            if (hex != null && hex.Equals(placingHex) && MapManager.instance.Ships[hex.y, hex.x] == Ship.EShip.NONE)
                 BeginDrag();
-            else
-                Debug.Log($"{Hex.MouseToHex()} vs {placingHex}");
         }
 
-        if (isDragging)
+        if (IsDragging)
             Drag();
     }
 
     public void ChooseShip(Ship.EShip eShip, GameObject ship)
     {
         Debug.Log($"Choose ship: {ship.name}");
-        this.eShip = eShip;
+        this.PlacingEShip = eShip;
         shipObj = ship;
         hasPlaced = false;
-        isDragging = false;
+        IsDragging = false;
+        UIManager.instance.UpdateShipIcons(eShip);
+    }
+    public void UnchooseShip()
+    {
+        Debug.Log("Unchoose ship");
+        PlacingEShip = Ship.EShip.NONE;
+        shipObj = null;
+        hasPlaced = false;
+        IsDragging = false;
+        UIManager.instance.UpdateShipIcons(PlacingEShip);
     }
 
     /// <summary>함선을 배치할 타일을 선택합니다.</summary>
@@ -80,16 +88,18 @@ public class PlaceManager : MonoBehaviour
         {
             Debug.Log("Begin Placing");
             hasPlaced = true;
+            UIManager.instance.PlaceHighlight(placingHex);
         }
         else
         {
             hasPlaced = false;
+            UIManager.instance.PlaceUnhighlight();
         }
     }
     void BeginDrag()
     {
         Debug.Log("Begin Drag");
-        isDragging = true;
+        IsDragging = true;
         shipInst = Instantiate(shipObj, Hex.HexToSqr(placingHex), Quaternion.identity, null);
     }
     void Drag()
@@ -100,7 +110,7 @@ public class PlaceManager : MonoBehaviour
     }
     void FinishDrag()
     {
-        if (MapManager.instance.CanPlace(eShip, placingHex, eDirec))
+        if (MapManager.instance.CanPlace(PlacingEShip, placingHex, eDirec))
             SuccessDrag();
         else
             FailDrag();
@@ -110,18 +120,18 @@ public class PlaceManager : MonoBehaviour
         Debug.Log("Success Drag");
         hasPlaced = false;
         UIManager.instance.PlaceUnhighlight();
-        isDragging = false;
+        IsDragging = false;
         shipInst = null;
-        if (!MapManager.instance.Place(eShip, placingHex, eDirec))
+        if (!MapManager.instance.Place(PlacingEShip, placingHex, eDirec))
         {
-            shipObj = null;
+            UnchooseShip();
         }
     }
     void FailDrag()
     {
         hasPlaced = false;
         UIManager.instance.PlaceUnhighlight();
-        isDragging = false;
+        IsDragging = false;
         Destroy(shipInst);
         shipInst = null;
     }
@@ -130,7 +140,7 @@ public class PlaceManager : MonoBehaviour
     public void SelectShip(Hex hex, Ship.EShip eShip)
     {
         chosenHex = new Hex(hex);
-        chosenEShip = eShip;
+        ChosenEShip = eShip;
         UIManager.instance.DisplayPlacementButtons(true);
     }
     public void DeselectShip()
@@ -139,7 +149,7 @@ public class PlaceManager : MonoBehaviour
             return;
 
         chosenHex = null;
-        chosenEShip = Ship.EShip.NONE;
+        ChosenEShip = Ship.EShip.NONE;
         UIManager.instance.DisplayPlacementButtons(false);
     }
 }

@@ -15,18 +15,20 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject attackHighlighter = null;
     [SerializeField]
-    private Text battleshipCountText = null;
-    [SerializeField]
-    private Text cruiserCountText = null;
-    [SerializeField]
-    private Text destroyerCountText = null;
+    private GameObject shipCountIndicators = null;
     [SerializeField]
     private GameObject PlacementButtons = null;
+
+    Image[] shipIcons;
+    Text[] shipCountTexts;
 
     void Awake()
     {
         if (instance == null) instance = this;
         else Destroy(gameObject);
+
+        shipIcons = shipCountIndicators.transform.GetComponentsInChildren<Image>();
+        shipCountTexts = shipCountIndicators.transform.GetComponentsInChildren<Text>();
     }
     void Start()
     {
@@ -34,12 +36,35 @@ public class UIManager : MonoBehaviour
     }
 
     #region PLACEMENT PHASE
-    public void UpdatePlacementPhase()
+    public void UpdateShipIcons(Ship.EShip eShip)
     {
-        // TODO: Text 필드 전부 지우고 transform.GetComponentInChildren<Text>()으로 찾아서 소프트코딩
-        battleshipCountText.text = MapManager.instance.ShipCounts[(int)Ship.EShip.BATTLESHIP].ToString();
-        cruiserCountText.text = MapManager.instance.ShipCounts[(int)Ship.EShip.CRUISER].ToString();
-        destroyerCountText.text = MapManager.instance.ShipCounts[(int)Ship.EShip.DESTROYER].ToString();
+        Color newColor;
+        foreach (Image shipIcon in shipIcons)
+        {
+            newColor = shipIcon.color;
+            newColor.a = 0.5f;
+            shipIcon.color = newColor;
+        }
+
+        if (eShip == Ship.EShip.NONE)
+            return;
+
+        Debug.Log(eShip);
+        Image icon = shipIcons[(int)eShip - 1];
+        newColor = icon.color;
+        newColor.a = 1f;
+        icon.color = newColor;
+    }
+    public void UpdateShipCountTexts()
+    {
+        int idx = 1;
+        foreach (Text shipCountText in shipCountTexts)
+        {
+            shipCountText.text = MapManager.instance.ShipCounts[idx++].ToString();
+        }
+        //battleshipCountText.text = MapManager.instance.ShipCounts[(int)Ship.EShip.BATTLESHIP].ToString();
+        //cruiserCountText.text = MapManager.instance.ShipCounts[(int)Ship.EShip.CRUISER].ToString();
+        //destroyerCountText.text = MapManager.instance.ShipCounts[(int)Ship.EShip.DESTROYER].ToString();
     }
     public void DisplayPlacementButtons(bool on)
     {

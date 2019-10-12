@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
 
         MapManager.instance.LoadMap(MAP_PATH);
         MapManager.instance.GenerateMap();
-        UIManager.instance.UpdatePlacementPhase();
+        UIManager.instance.UpdateShipIcons(Ship.EShip.NONE);
+        UIManager.instance.UpdateShipCountTexts();
     }
 }

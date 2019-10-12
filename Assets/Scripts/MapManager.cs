@@ -58,21 +58,6 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void SaveMap(string path)
-    {
-        using (StreamWriter streamWriter = new StreamWriter(path))
-        {
-            streamWriter.WriteLine($"{width} {height}");
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    streamWriter.Write(string.Join(" ", Tiles[y, x]));
-                }
-                streamWriter.WriteLine();
-            }
-        }
-    }
     public void LoadMap(string path)
     {
         using (StreamReader streamReader = new StreamReader(path))
@@ -89,7 +74,7 @@ public class MapManager : MonoBehaviour
 
             Debug.Log($"Loading map: B{ShipCounts[(int)Ship.EShip.BATTLESHIP]} C{ShipCounts[(int)Ship.EShip.CRUISER]} D{ShipCounts[(int)Ship.EShip.DESTROYER]} {width}X{height}");
 
-            int y = 0;
+            int y = height - 1;
             while ((line = streamReader.ReadLine()) != null)
             {
                 int[] vals = System.Array.ConvertAll(line.Trim().Split(), s => int.Parse(s));
@@ -99,8 +84,8 @@ public class MapManager : MonoBehaviour
                     Tiles[y, x] = (Tile.ETile)val;
                     x++;
                 }
-                y++;
-                if (y == height) break;  // 이후 파일 내용 무시
+                y--;
+                if (y == -1) break;  // 이후 파일 내용 무시
             }
         }
     }
@@ -108,12 +93,12 @@ public class MapManager : MonoBehaviour
     public void DecreaseShipCount(Ship.EShip eShip)
     {
         if ((--ShipCounts[(int)eShip]) < 0) throw new System.Exception("※ ShipCount is lower than 0");
-        UIManager.instance.UpdatePlacementPhase();
+        UIManager.instance.UpdateShipCountTexts();
     }
     public void IncreaseShipCount(Ship.EShip eShip)
     {
         ShipCounts[(int)eShip]++;
-        UIManager.instance.UpdatePlacementPhase();
+        UIManager.instance.UpdateShipCountTexts();
     }
 
     /// <summary>
@@ -162,7 +147,6 @@ public class MapManager : MonoBehaviour
         return true;
     }
 
-
     /// <summary>
     /// 함선을 Ships 배열에 저장합니다. 유효성 검사를 하지 않으므로 CanPlace를 먼저 수행하세요.
     /// 같은 함종을 더 배치할 수 있으면 참을, 그렇지 않으면 거짓을 반환합니다.
@@ -182,7 +166,7 @@ public class MapManager : MonoBehaviour
         return ShipCounts[(int)eShip] > 0;
     }
 
-    bool IsValidTile(Hex hex)
+    public bool IsValidTile(Hex hex)
     {
         return hex.x >= 0 && hex.x < width && hex.y >= 0 && hex.y < height;
     }

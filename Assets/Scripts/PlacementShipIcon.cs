@@ -13,11 +13,18 @@ public class PlacementShipIcon : MonoBehaviour
     {
         if (MapManager.instance.ShipCounts[(int)eShip] > 0)
         {
+            if (PlaceManager.instance.PlacingEShip == eShip)
+            {
+                PlaceManager.instance.UnchooseShip();
+                return;
+            }
+
             PlaceManager.instance.ChooseShip(eShip, ship);
         }
         else
         {
             Debug.Log($"{eShip}: 더 이상 배치할 수 없습니다.");
+            PlaceManager.instance.UnchooseShip();
         }
     }
 }

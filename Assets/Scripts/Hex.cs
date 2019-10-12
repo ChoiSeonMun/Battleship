@@ -69,6 +69,12 @@ public class Hex
 
         if (hit.collider != null)
         {
+            if (hit.collider.name == "Blocker")
+            {
+                Debug.Log("MouseToHex hit Blocker");
+                return null;
+            }
+
             GameObject obj = hit.collider.gameObject;
             return SqrToHex(obj.transform.position);
         }
