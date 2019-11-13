@@ -1,41 +1,98 @@
-// Learn cc.Class:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/class.html
-//  - [English] http://docs.cocos2d-x.org/creator/manual/en/scripting/class.html
-// Learn Attribute:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/reference/attributes.html
-//  - [English] http://docs.cocos2d-x.org/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/life-cycle-callbacks.html
-//  - [English] https://www.cocos2d-x.org/docs/creator/manual/en/scripting/life-cycle-callbacks.html
 
-cc.Class({
+const DX = 0.8;
+const DY = 0.69;
+const H_DX = DX / 2;
+const R_DX = 1 / 0.8;
+const R_DY = 1 / 0.69;
+
+var Hex = cc.Class({
     extends: cc.Component,
 
     properties: {
-        // foo: {
-        //     // ATTRIBUTES:
-        //     default: null,        // The default value will be used only when the component attaching
-        //                           // to a node for the first time
-        //     type: cc.SpriteFrame, // optional, default is typeof default
-        //     serializable: true,   // optional, default is true
-        // },
-        // bar: {
-        //     get () {
-        //         return this._bar;
-        //     },
-        //     set (value) {
-        //         this._bar = value;
-        //     }
-        // },
+        x : 0,
+        y : 0,
+
+        EDirec : cc.Enum({
+            default : -1,
+
+            RIGHT : 1,
+            RIGHTUP : 2,
+            LEFTUP : 3,
+            LEFT : 4,
+            LEFTDOWN : 5,
+            RIGHTDOWN : 6
+        })
     },
 
-    // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {},
-
-    start () {
-
+    __ctor__(x,y){
+        this.x = x;
+        this.y = y;
     },
+
+    __ctor__(Hex){
+        x = Hex.x;
+        y = Hex.y;
+    },
+
+    ToString(){
+        return "Hex("+x+","+y+")";
+    },
+
+    Equals(other){
+        return x == other.x && y == other.y;
+    },
+
+    statics :{
+        HexToSqr(Hex){
+            return HexToSqr(Hex.x, Hex.y);
+        },
+
+        HexToSqr(x,y){
+            hexX = x * DX + (y % 2 != 0 ? H_DX : 0);
+            hexY = y * DY;
+
+            return cc.Vec2(hexX,hexY);
+        },
+
+        SqrToHex(pos){
+            return SqrToHex(pos.x, pos.y);
+        },
+
+        SqrToHex(x,y){
+            sqrY = y * R_DY;
+            sqrX = sqrY % 2 != 0 ? (x - H_DX) * R_DX : x * R_DX;
+
+            return new Hex(sqrX, sqrY);
+        }
+    },
+
+    Move(eDIrec){
+        switch (eDirec)
+        {
+            case Hex.EDirec.RIGHT:
+                x++;
+                break;
+            case Hex.EDirec.RIGHTUP:
+                y++;
+                if (y % 2 == 0) x++;
+                break;
+            case Hex.EDirec.LEFTUP:
+                y++;
+                if (y % 2 != 0) x--;
+                break;
+            case Hex.EDirec.LEFT:
+                x--;
+                break;
+            case Hex.EDirec.LEFTDOWN:
+                y--;
+                if (y % 2 != 0) x--;
+                break;
+            case Hex.EDirec.RIGHTDOWN:
+                y--;
+                if (y % 2 == 0) x++;
+                break;
+        }
+    }
 
     // update (dt) {},
 });
