@@ -1,41 +1,81 @@
-// Learn cc.Class:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/class.html
-//  - [English] http://docs.cocos2d-x.org/creator/manual/en/scripting/class.html
-// Learn Attribute:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/reference/attributes.html
-//  - [English] http://docs.cocos2d-x.org/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/life-cycle-callbacks.html
-//  - [English] https://www.cocos2d-x.org/docs/creator/manual/en/scripting/life-cycle-callbacks.html
-
 cc.Class({
     extends: cc.Component,
 
     properties: {
-        // foo: {
-        //     // ATTRIBUTES:
-        //     default: null,        // The default value will be used only when the component attaching
-        //                           // to a node for the first time
-        //     type: cc.SpriteFrame, // optional, default is typeof default
-        //     serializable: true,   // optional, default is true
-        // },
-        // bar: {
-        //     get () {
-        //         return this._bar;
-        //     },
-        //     set (value) {
-        //         this._bar = value;
-        //     }
-        // },
+        width: 0,
+        height: 0,
+        tileMargin:cc.v2(0,0),
+        hexTilePrefab: {
+            default: null,
+            type: cc.Prefab,
+        },
+        ShipPrefab: {
+            default: null,
+            type: cc.Prefab,
+        },
+        ShipType:cc.Enum({
+            default:-1,
+        
+            Small:1,
+            Middle:2,
+            Big:3
+        }),
+        EDirec:cc.Enum({
+            default: -1,
+        
+            RIGHT: 1,
+            RIGHTUP: 2,
+            LEFTUP: 3,
+            LEFT: 4,
+            LEFTDOWN: 5,
+            RIGHTDOWN: 6,
+            
+        })
     },
 
     // LIFE-CYCLE CALLBACKS:
 
-    // onLoad () {},
-
-    start () {
-
+    onLoad: function () {
+        this.tiles = [];
+        this.node.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this);
+        this.node.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this);
+        this.node.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this);
+        var tile=this.hexTilePrefab.data;
+        this.DX=tile._contentSize.width*tile._scale.x;
+        this.DY=tile._contentSize.height*tile._scale.y*0.75;
+        for (var r = 0; r < this.height; ++r) {
+            this.tiles[r] = [];
+            for (var c = 0; c < this.width; ++c) 
+                this.tiles[r][c] = this.spawnTile(r,c);
+        }
     },
+    spawnTile: function (R, C) {
+        var tile = cc.instantiate(this.hexTilePrefab);
+        var hex = tile.getComponent("HexTile");
+        hex.R = R;
+        hex.C = C;
+        hex.manager=this;
+        this.node.addChild(tile);
+        tile.setPosition(this.getTilePos(R,C));
+        hex.setEvent();
+        return hex;
+    },
+    getTilePos:function(R,C){
+        var hexX = C * this.DX + (R % 2 != 0 ? this.DX : this.DX / 2);
+        var hexY = R * this.DY + this.DY / 1.5;
 
-    // update (dt) {},
+        return cc.v2(hexX+this.tileMargin.x, hexY+this.tileMargin.y);
+    },
+    onTouchStart:function(event){
+        var hex=event.target.getComponent("HexTile");
+        console.log("시작",hex.R,hex.C);
+    },
+    onTouchMove:function(event){
+    },
+    onTouchEnd:function(event){
+        var hex=event.target.getComponent("HexTile");
+        console.log("종료",hex.R,hex.C);
+    },
+     update (dt) {
+     },
 });
