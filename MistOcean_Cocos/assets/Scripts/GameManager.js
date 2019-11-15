@@ -43,8 +43,10 @@ cc.Class({
         this.tiles = [];
         this.setEvents();
         var tile=this.hexTilePrefab.data;
-        this.DX=tile._contentSize.width*tile._scale.x;
-        this.DY=tile._contentSize.height*tile._scale.y*0.75;
+        this.DX=tile._contentSize.width*tile._scale.x-2;
+        this.DX=parseInt(this.DX);
+        this.DY=tile._contentSize.height*tile._scale.y*0.75 -2;
+        this.DY=parseInt(this.DY);
         for (var r = 0; r < this.height; ++r) {
             this.tiles[r] = [];
             for (var c = 0; c < this.width; ++c) 
