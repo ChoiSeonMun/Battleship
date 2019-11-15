@@ -5,6 +5,10 @@ cc.Class({
         width: 0,
         height: 0,
         tileMargin:cc.v2(0,0),
+        scrollView: {
+            default: null,
+            type: cc.Node,
+        },
         hexTilePrefab: {
             default: null,
             type: cc.Prefab,
@@ -37,9 +41,7 @@ cc.Class({
 
     onLoad: function () {
         this.tiles = [];
-        this.node.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this);
-        this.node.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this);
-        this.node.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this);
+        this.setEvents();
         var tile=this.hexTilePrefab.data;
         this.DX=tile._contentSize.width*tile._scale.x;
         this.DY=tile._contentSize.height*tile._scale.y*0.75;
@@ -49,13 +51,18 @@ cc.Class({
                 this.tiles[r][c] = this.spawnTile(r,c);
         }
     },
+    setEvents:function(){//event bubble
+        this.scrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.scrollView);
+        this.scrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.scrollView);
+        this.scrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.scrollView);
+    },
     spawnTile: function (R, C) {
         var tile = cc.instantiate(this.hexTilePrefab);
         var hex = tile.getComponent("HexTile");
         hex.R = R;
         hex.C = C;
         hex.manager=this;
-        this.node.addChild(tile);
+        this.scrollView.addChild(tile);
         tile.setPosition(this.getTilePos(R,C));
         hex.setEvent();
         return hex;
@@ -68,12 +75,16 @@ cc.Class({
     },
     onTouchStart:function(event){
         var hex=event.target.getComponent("HexTile");
+        if(hex==null)
+            return;
         console.log("시작",hex.R,hex.C);
     },
     onTouchMove:function(event){
     },
     onTouchEnd:function(event){
         var hex=event.target.getComponent("HexTile");
+        if(hex==null)
+            return;
         console.log("종료",hex.R,hex.C);
     },
      update (dt) {
