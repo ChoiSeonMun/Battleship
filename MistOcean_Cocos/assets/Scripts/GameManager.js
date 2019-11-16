@@ -59,7 +59,7 @@ cc.Class({
         this.target = null;
         this.hilight = null;
         this.shipType = 2;
-        this.shipCount = [2,2,1];
+        this.shipCount = [2, 2, 1];
         this.cursorDirec = EDirec.default;
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);
@@ -92,12 +92,15 @@ cc.Class({
         for (var i = 0; i < 3; ++i) {
             var s = new cc.Node("ShipPrefab" + i);
             var sc = s.addComponent("Ship");
+            sc.R=0;
+            sc.C=0;
+            sc.direc = EDirec.RIGHT;
             var sp = new cc.Node("ShipPreviewPrefab" + i);
-            sc.blocks = [];
             for (var j = 0; j < 2 + i; ++j) {
-                sc.blocks[j] = cc.instantiate(this.ShipBlockPrefab);
-                sc.blocks[j].setPosition(cc.v2(this.DX * j, 0));
-                s.addChild(sc.blocks[j]);
+                var b = cc.instantiate(this.ShipBlockPrefab);
+                b.setPosition(cc.v2(this.DX * j, 0));
+                s.addChild(b);
+
                 var spb = cc.instantiate(this.ShipPreviewPrefab);
                 spb.setPosition(cc.v2(this.DX * j, 0));
                 sp.addChild(spb);
@@ -139,7 +142,7 @@ cc.Class({
         return true;
     },
     showShipPreview: function (R, C) {  //ship preview 표시
-        if(this.shipCount[this.shipType - 2]<=0)
+        if (this.shipCount[this.shipType - 2] <= 0||!this.isValidTile(R,C))
             return;
         this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[this.shipType - 2]);
         this.shipPreview.setPosition(this.getTilePos(R, C));
@@ -162,30 +165,34 @@ cc.Class({
             if (!this.isValidTile(R + step.y * i, C + step.x * i))
                 return;
         }
-        var typeindex=this.shipType - 2;
+        var typeindex = this.shipType - 2;
         var ship = cc.instantiate(this.shipPrefabs[typeindex]);
+        var sc = ship.getComponent("Ship");
+        sc.R=R;
+        sc.C=C;
+        sc.shipType = this.shipType;
+        sc.direc = this.cursorDirec;
         ship.angle = EDirec.getAngle(this.cursorDirec);
         ship.setPosition(this.getTilePos(R, C));
         for (var i = 0; i < this.shipType; ++i) {
-            this.tiles[R + step.y * i][ C + step.x * i].ship=ship;
+            this.tiles[R + step.y * i][C + step.x * i].ship = sc;
         }
         this.scrollView.addChild(ship);
         this.ships.push(ship);
-        console.log(this.ShipCountLabel[typeindex]._components[0]);
-        this.ShipCountLabel[typeindex]._components[0].string= --this.shipCount[typeindex];
+        this.ShipCountLabel[typeindex]._components[0].string = --this.shipCount[typeindex];
         this.hilight.destroy();
         this.hilight = null;
         this.target = null;
     },
     isValidTile: function (R, C) {
-        var inrange=function(R,C,w,h){ return R >= 0 && C >= 0 && R < h && C < w * 2 + R % 2 - 1};
-        if (!inrange(R,C,this.width,this.height))
+        var inrange = function (R, C, w, h) { return R >= 0 && C >= 0 && R < h && C < w * 2 + R % 2 - 1 };
+        if (!inrange(R, C, this.width, this.height))
             return false;
-        if (this.tiles[R][C].ship!=null)
+        if (this.tiles[R][C].ship != null)
             return false;
-        for(var t=1;t<=6;++t){
-            var v=EDirec.getVector(t);
-            if (inrange(R+v.y,C+v.x,this.width,this.height)&&this.tiles[R+v.y][C+v.x].ship!=null)
+        for (var t = 1; t <= 6; ++t) {
+            var v = EDirec.getVector(t);
+            if (inrange(R + v.y, C + v.x, this.width, this.height) && this.tiles[R + v.y][C + v.x].ship != null)
                 return false;
         }
         return true;
@@ -223,6 +230,18 @@ cc.Class({
     onSettingButtonClick: function (event, customEventData) {
         this.shipType = customEventData;
         console.log(this.shipType);
+    },
+    onDeleteButtonClick:function(event){
+        if (this.target == null || this.target.ship == null)
+            return;
+        var ship=this.target.ship;
+        var step=EDirec.getVector(ship.direc);
+        for (var i = 0; i < ship.shipType; ++i) {
+            this.tiles[ship.R+step.y*i][ship.C+step.x*i].ship=null;
+        }
+        this.ShipCountLabel[ship.shipType-2]._components[0].string = ++this.shipCount[ship.shipType-2];
+        this.ships.splice(this.ships.indexOf(ship),1);
+        ship.node.destroy();
     },
     //--------------------------------//
     update(dt) {
