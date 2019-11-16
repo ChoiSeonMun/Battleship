@@ -3,28 +3,48 @@ cc.Class({
 
     properties: {
         R:0,
-        C:0
-    },
-    setEvent:function(){
-        this.node.on(cc.Node.EventType.TOUCH_START, function(event){}, this);
-        this.node.on(cc.Node.EventType.TOUCH_MOVE, function(event){}, this);
-        this.node.on(cc.Node.EventType.TOUCH_END, function(event){}, this);
-    },
-    onTouchStart:function(event){
-        console.log(event);
-        console.log("Start :",this.R,this.C);
-    },
-    onTouchMove:function(event){
-        console.log("Move :",this.R,this.C);
-    },
-    onTouchEnd:function(event){
-        console.log("End :",this.R,this.C);
+        C:0,
+        TileHilightPrefab:{
+            default:null,
+            type:cc.Prefab,
+        }
     },
     // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {},
+    onLoad () {
+        this.hilight=null
+    },
     start() {
     },
 
     // update (dt) {},
+    setEvent:function(){
+        this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
+        this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
+        this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
+        this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
+    },
+    onTouchStart:function(event){
+        //this.beginSelectEffect();
+    },
+    onTouchCancel:function(event){
+        //this.endSelectEffect();
+    },
+    onTouchMove:function(event){
+    },
+    onTouchEnd:function(event){
+        //this.endSelectEffect();
+    },
+    beginSelectEffect:function(){
+        if(this.hilight!=null)
+            this.hilight.destroy();
+        this.hilight=cc.instantiate(this.TileHilightPrefab);
+        this.node.addChild(this.hilight);
+    },
+    endSelectEffect:function(){
+        if(this.hilight==null)
+            return;
+        this.hilight.destroy();
+        this.hilight=null;
+
+    },
 });

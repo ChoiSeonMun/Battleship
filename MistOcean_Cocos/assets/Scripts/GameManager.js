@@ -41,6 +41,7 @@ cc.Class({
 
     onLoad: function () {
         this.tiles = [];
+        this.target=null;
         this.setEvents();
         var tile=this.hexTilePrefab.data;
         this.DX=tile._contentSize.width*tile._scale.x-2;
@@ -56,6 +57,7 @@ cc.Class({
     setEvents:function(){//event bubble
         this.scrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.scrollView);
         this.scrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.scrollView);
+        this.scrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.scrollView);
         this.scrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.scrollView);
     },
     spawnTile: function (R, C) {
@@ -75,13 +77,50 @@ cc.Class({
 
         return cc.v2(hexX+this.tileMargin.x, hexY+this.tileMargin.y);
     },
+    getTileRC:function(x,y){
+        var R=0;
+        var C=0;
+        R=(y- this.scrollView.position.y-this.tileMargin.y)/this.DY*2;
+        if(R<0) R-=1;
+        R=parseInt(R);
+        if(R%2!=0){
+            R=parseInt(R/2);
+            C=(x- this.scrollView.position.x-this.tileMargin.x - (R % 2 != 0 ? this.DX / 2 :0))/this.DX;
+            if(C<0) C-=1;
+            C=parseInt(C);
+            return cc.v2(C,R);
+
+        }
+        var C=(x- this.scrollView.position.x-this.tileMargin.x - (R % 2 != 0 ? this.DX / 2 :0) )/this.DX;
+        C=parseInt(C);
+        return cc.v2(C,R);
+    },
     onTouchStart:function(event){
         var hex=event.target.getComponent("HexTile");
         if(hex==null)
             return;
+        if(hex.manager.target!=null)
+            hex.manager.target.endSelectEffect();
+        hex.beginSelectEffect();
+        hex.manager.target=hex;
+        
+
         console.log("시작",hex.R,hex.C);
     },
     onTouchMove:function(event){
+        var hex=event.target.getComponent("HexTile");
+        if(hex==null)
+            return;
+        var l=event.touch.getLocation();
+        var v=hex.manager.getTileRC(l.x,l.y);
+        console.log(v.x,v.y);
+        
+    },
+    onTouchCancel:function(event){
+        var hex=event.target.getComponent("HexTile");
+        if(hex==null)
+            return;
+        console.log("취소",hex.R,hex.C);
     },
     onTouchEnd:function(event){
         var hex=event.target.getComponent("HexTile");

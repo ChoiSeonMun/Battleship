@@ -114,6 +114,9 @@
     "_enabled": true,
     "R": 0,
     "C": 0,
+    "TileHilightPrefab": {
+      "__uuid__": "8dae9169-c004-45c8-b912-85416389d6ec"
+    },
     "_id": ""
   },
   {
