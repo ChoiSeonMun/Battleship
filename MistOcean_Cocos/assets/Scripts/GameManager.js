@@ -1,3 +1,6 @@
+var Enums = require('./Enums');
+var EDirec = Enums.EDirec;
+var ShipType = Enums.ShipType;
 cc.Class({
     extends: cc.Component,
 
@@ -17,24 +20,6 @@ cc.Class({
             default: null,
             type: cc.Prefab,
         },
-        ShipType:cc.Enum({
-            default:-1,
-        
-            Small:1,
-            Middle:2,
-            Big:3
-        }),
-        EDirec:cc.Enum({
-            default: -1,
-        
-            RIGHT: 1,
-            RIGHTUP: 2,
-            LEFTUP: 3,
-            LEFT: 4,
-            LEFTDOWN: 5,
-            RIGHTDOWN: 6,
-            
-        })
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -60,7 +45,7 @@ cc.Class({
         this.scrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.scrollView);
         this.scrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.scrollView);
     },
-    spawnTile: function (R, C) {
+    spawnTile: function (R, C) {    //hextile prefab의 node를 생성
         var tile = cc.instantiate(this.hexTilePrefab);
         var hex = tile.getComponent("HexTile");
         hex.R = R;
@@ -71,49 +56,48 @@ cc.Class({
         hex.setEvent();
         return hex;
     },
-    getTilePos:function(R,C){
+    getTilePos:function(R,C){   //tile node의 position을 반환
         var hexX = C * this.DX + (R % 2 != 0 ? this.DX : this.DX / 2);
         var hexY = R * this.DY + this.DY / 1.5;
-
+        hexX=parseInt(hexX);
+        hexY=parseInt(hexY);
         return cc.v2(hexX+this.tileMargin.x, hexY+this.tileMargin.y);
     },
-    getTileRC:function(x,y){
-        var R=0;
-        var C=0;
-        R=(y- this.scrollView.position.y-this.tileMargin.y)/this.DY*2;
-        if(R<0) R-=1;
-        R=parseInt(R);
-        if(R%2!=0){
-            R=parseInt(R/2);
-            C=(x- this.scrollView.position.x-this.tileMargin.x - (R % 2 != 0 ? this.DX / 2 :0))/this.DX;
-            if(C<0) C-=1;
-            C=parseInt(C);
-            return cc.v2(C,R);
-
-        }
-        var C=(x- this.scrollView.position.x-this.tileMargin.x - (R % 2 != 0 ? this.DX / 2 :0) )/this.DX;
-        C=parseInt(C);
-        return cc.v2(C,R);
+    getRealTilePos:function(R,C){   //tile node의 실제 pos를 반환
+        var pos=this.getTilePos(R,C);
+        pos.y+=this.scrollView.position.y;
+        return pos;
     },
     onTouchStart:function(event){
         var hex=event.target.getComponent("HexTile");
         if(hex==null)
             return;
-        if(hex.manager.target!=null)
-            hex.manager.target.endSelectEffect();
-        hex.beginSelectEffect();
-        hex.manager.target=hex;
+        hex.manager.selectTile(hex);
         
-
         console.log("시작",hex.R,hex.C);
+    },
+    selectTile:function(hex){
+        if(this.target!=null)
+            this.target.endSelectEffect();
+        hex.beginSelectEffect();
+        this.target=hex;
+    },
+    getEdirect:function(origin,forward){//v2 to v2의 방향을 계산
+        var left=origin.x>forward.x;
+        var angle=Math.atan2(forward.y-origin.y,forward.x-origin.x)*180/Math.PI;
+        if(left){
+            if(angle>150 || angle<-150) return EDirec.LEFT;
+            if(angle<-90) return EDirec.LEFTDOWN;
+            return EDirec.LEFTUP;
+        }
+        if(angle>30) return EDirec.RIGHTUP;
+        if(angle<-30) return EDirec.RIGHTDOWN;
+        return EDirec.RIGHT;
     },
     onTouchMove:function(event){
         var hex=event.target.getComponent("HexTile");
         if(hex==null)
             return;
-        var l=event.touch.getLocation();
-        var v=hex.manager.getTileRC(l.x,l.y);
-        console.log(v.x,v.y);
         
     },
     onTouchCancel:function(event){
@@ -121,6 +105,9 @@ cc.Class({
         if(hex==null)
             return;
         console.log("취소",hex.R,hex.C);
+        var l=hex.manager.getRealTilePos(hex.R,hex.C);
+        var c=event.touch.getLocation();
+        console.log(hex.manager.getEdirect(l,c));
     },
     onTouchEnd:function(event){
         var hex=event.target.getComponent("HexTile");
