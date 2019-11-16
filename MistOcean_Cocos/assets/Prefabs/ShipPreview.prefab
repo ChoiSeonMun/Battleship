@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "ShipPrefab",
+    "_name": "ShipBlockPrefab",
     "_objFlags": 0,
     "_parent": null,
     "_children": [],
@@ -27,12 +27,12 @@
     "_prefab": {
       "__id__": 3
     },
-    "_opacity": 255,
+    "_opacity": 126,
     "_color": {
       "__type__": "cc.Color",
-      "r": 194,
-      "g": 147,
-      "b": 76,
+      "r": 160,
+      "g": 101,
+      "b": 38,
       "a": 255
     },
     "_contentSize": {
@@ -49,12 +49,12 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": 1
+      "z": 0
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 0.9,
-      "y": 0.9,
+      "x": 1,
+      "y": 1,
       "z": 1
     },
     "_eulerAngles": {
@@ -65,8 +65,8 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_is3DNode": true,
-    "groupIndex": 2,
+    "_is3DNode": false,
+    "groupIndex": 0,
     "_id": ""
   },
   {
@@ -85,7 +85,7 @@
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_spriteFrame": {
-      "__uuid__": "35d3b850-16f7-4f9f-a778-f30eecba686d"
+      "__uuid__": "87755451-46a8-443a-b8bb-567c12e0fd55"
     },
     "_type": 0,
     "_sizeMode": 0,
@@ -107,9 +107,9 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "d962c457-ad8c-420b-93a1-e1fc84239f02"
     },
-    "fileId": "fakqSY3GZJ04ayhwBRQa1S",
+    "fileId": "b0Rdx4OtBLQJO8G4isLI93",
     "sync": false
   }
 ]

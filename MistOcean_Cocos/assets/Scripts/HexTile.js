@@ -4,14 +4,9 @@ cc.Class({
     properties: {
         R:0,
         C:0,
-        TileHilightPrefab:{
-            default:null,
-            type:cc.Prefab,
-        }
     },
     // LIFE-CYCLE CALLBACKS:
     onLoad () {
-        this.hilight=null
     },
     start() {
     },
@@ -33,18 +28,5 @@ cc.Class({
     },
     onTouchEnd:function(event){
         //this.endSelectEffect();
-    },
-    beginSelectEffect:function(){
-        if(this.hilight!=null)
-            this.hilight.destroy();
-        this.hilight=cc.instantiate(this.TileHilightPrefab);
-        this.node.addChild(this.hilight);
-    },
-    endSelectEffect:function(){
-        if(this.hilight==null)
-            return;
-        this.hilight.destroy();
-        this.hilight=null;
-
     },
 });
