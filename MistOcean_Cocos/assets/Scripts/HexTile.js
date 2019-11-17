@@ -2,15 +2,19 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        R:0,
-        C:0,
     },
     // LIFE-CYCLE CALLBACKS:
     onLoad () {
     },
     start() {
     },
-
+    init:function(R,C,manager){
+        this.R=R;
+        this.C=C;
+        this.manager=manager;
+        this.ship=null;
+        this.setEvent();
+    },
     // update (dt) {},
     setEvent:function(){
         this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
@@ -19,14 +23,11 @@ cc.Class({
         this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
     },
     onTouchStart:function(event){
-        //this.beginSelectEffect();
     },
     onTouchCancel:function(event){
-        //this.endSelectEffect();
     },
     onTouchMove:function(event){
     },
     onTouchEnd:function(event){
-        //this.endSelectEffect();
     },
 });

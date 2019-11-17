@@ -1,7 +1,6 @@
 var Enums = require('./Enums');
 var EDirec = Enums.EDirec;
 var ShipType = Enums.ShipType;
-var Ship = require('./Ship').Ship;
 cc.Class({
     extends: cc.Component,
 
@@ -9,6 +8,10 @@ cc.Class({
         width: 0,
         height: 0,
         tileMargin: cc.v2(0, 0),
+        shipCount: {
+            default: [],
+            type: [cc.Integer]
+        },
         scrollView: {
             default: null,
             type: cc.Node,
@@ -58,8 +61,7 @@ cc.Class({
         this.shipPreview = null;
         this.target = null;
         this.hilight = null;
-        this.shipType = 2;
-        this.shipCount = [2, 2, 1];
+        this.shipType = ShipType.Small;
         this.cursorDirec = EDirec.default;
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);
@@ -76,11 +78,7 @@ cc.Class({
         tile.setPosition(this.getTilePos(R, C));
         this.scrollView.addChild(tile);
         var hex = tile.getComponent("HexTile");
-        hex.R = R;
-        hex.C = C;
-        hex.manager = this;
-        hex.ship = null;
-        hex.setEvent();
+        hex.init(R, C, this);
         return hex;
     },
     getTilePos: function (R, C) {   //R행C열 타일의 위치 반환
@@ -88,15 +86,12 @@ cc.Class({
         var y = parseInt(R * this.DY + this.DY / 1.5) + this.tileMargin.y;
         return cc.v2(x, y);
     },
-    setShipPrefabs: function () {  //2,3,4칸 배의 prefab과 preview생성
-        for (var i = 0; i < 3; ++i) {
-            var s = new cc.Node("ShipPrefab" + i);
-            var sc = s.addComponent("Ship");
-            sc.R=0;
-            sc.C=0;
-            sc.direc = EDirec.RIGHT;
-            var sp = new cc.Node("ShipPreviewPrefab" + i);
-            for (var j = 0; j < 2 + i; ++j) {
+    setShipPrefabs: function () {  //세 종류 배의 prefab과 preview생성
+        for (var t = ShipType.Small; t <= ShipType.Big; ++t) {
+            var s = new cc.Node("ShipPrefab" + ShipType.toString(t));
+            s.addComponent("Ship");
+            var sp = new cc.Node("ShipPreviewPrefab" + ShipType.toString(t));
+            for (var j = 0; j < t; ++j) {
                 var b = cc.instantiate(this.ShipBlockPrefab);
                 b.setPosition(cc.v2(this.DX * j, 0));
                 s.addChild(b);
@@ -105,8 +100,8 @@ cc.Class({
                 spb.setPosition(cc.v2(this.DX * j, 0));
                 sp.addChild(spb);
             }
-            this.shipPrefabs[i] = s;
-            this.ShipPreviewPrefabs[i] = sp;
+            this.shipPrefabs[t - 2] = s;
+            this.ShipPreviewPrefabs[t - 2] = sp;
         }
     },
     getRealTilePos: function (R, C) {   //tile node의 실제 pos를 반환
@@ -126,65 +121,73 @@ cc.Class({
         if (angle < -30) return EDirec.RIGHTDOWN;
         return EDirec.RIGHT;
     },
-    selectTile: function (hex) {       //타일을 선택하고 hex위치에 hilight 생성
-        if (this.target == hex) {   //다시 누르면 선택 취소
-            this.hilight.destroy();
-            this.hilight = null;
-            this.target = null;
-            return false;
-        }
+    selectTile: function (hex) {       //target을 지정하고 hilight와 preview 생성
         this.target = hex;
         if (this.hilight == null) {
             this.hilight = cc.instantiate(this.TileHilightPrefab);
             this.scrollView.addChild(this.hilight);
         }
         this.hilight.setPosition(this.getTilePos(hex.R, hex.C));
-        return true;
+        hex.manager.showShipPreview();
     },
-    showShipPreview: function (R, C) {  //ship preview 표시
-        if (this.shipCount[this.shipType - 2] <= 0||!this.isValidTile(R,C))
+    deselectTile:function(){//target 해제
+        if(this.hilight!=null)
+            this.hilight.destroy();
+        this.hilight = null;
+        this.target = null;
+    },
+    showShipPreview: function () {  //ship preview 표시
+        var R = this.target.R;
+        var C = this.target.C;
+        var typeindex = this.shipType - 2;
+        if (this.shipCount[typeindex] <= 0 || !this.isValidTile(R, C))
             return;
-        this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[this.shipType - 2]);
+        this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[typeindex]);
         this.shipPreview.setPosition(this.getTilePos(R, C));
         this.scrollView.addChild(this.shipPreview);
     },
-    updateCursorDirec: function (hex, touch) {  //커서방향 갱신
-        var origin = this.getRealTilePos(hex.R, hex.C);
-        var foward = touch.getLocation();
-        this.cursorDirec = this.getEdirect(origin, foward);
+    updateCursorDirec: function (forward) {  //커서방향 갱신
+        var origin = this.getRealTilePos(this.target.R, this.target.C);
+        this.cursorDirec = this.getEdirect(origin, forward);
         this.shipPreview.angle = EDirec.getAngle(this.cursorDirec);
     },
-    coverShipPreview: function () {    ////ship preview 가리기
+    coverShipPreview: function () {    ////ship preview 제거
         if (this.shipPreview != null)
             this.shipPreview.destroy();
         this.shipPreview = null;
     },
-    spwanShip: function (R, C) {
+    spwanShip: function () {        //target위치 cursor 방향에 배 생성
+        var R = this.target.R;
+        var C = this.target.C;
         var step = EDirec.getVector(this.cursorDirec);
-        for (var i = 0; i < this.shipType; ++i) {
-            if (!this.isValidTile(R + step.y * i, C + step.x * i))
-                return;
-        }
         var typeindex = this.shipType - 2;
+
+        if (!this.isValidShip(R, C, this.shipType, this.cursorDirec))
+            return;
+
         var ship = cc.instantiate(this.shipPrefabs[typeindex]);
-        var sc = ship.getComponent("Ship");
-        sc.R=R;
-        sc.C=C;
-        sc.shipType = this.shipType;
-        sc.direc = this.cursorDirec;
         ship.angle = EDirec.getAngle(this.cursorDirec);
         ship.setPosition(this.getTilePos(R, C));
-        for (var i = 0; i < this.shipType; ++i) {
-            this.tiles[R + step.y * i][C + step.x * i].ship = sc;
-        }
         this.scrollView.addChild(ship);
         this.ships.push(ship);
+
+        var sc = ship.getComponent("Ship");
+        sc.init(R, C, this.shipType, this.cursorDirec, this);
+        for (var i = 0; i < this.shipType; ++i)
+            this.tiles[R + step.y * i][C + step.x * i].ship = sc;
+
         this.ShipCountLabel[typeindex]._components[0].string = --this.shipCount[typeindex];
-        this.hilight.destroy();
-        this.hilight = null;
-        this.target = null;
+        this.deselectTile();
     },
-    isValidTile: function (R, C) {
+    isValidShip: function (R, C, type, direc) {  //배의 유효성 검사
+        var step = EDirec.getVector(direc);
+        for (var i = 0; i < type; ++i) {
+            if (!this.isValidTile(R + step.y * i, C + step.x * i))
+                return false;
+        }
+        return true;
+    },
+    isValidTile: function (R, C) {  //타일의 유효성 검사
         var inrange = function (R, C, w, h) { return R >= 0 && C >= 0 && R < h && C < w * 2 + R % 2 - 1 };
         if (!inrange(R, C, this.width, this.height))
             return false;
@@ -197,27 +200,41 @@ cc.Class({
         }
         return true;
     },
+    deleteTargetShip:function(){    //target 위의 ship 제거
+        var ship = this.target.ship;
+        var step = EDirec.getVector(ship.direc);
+        var typeindex=ship.type-2;
+        for (var i = 0; i < ship.type; ++i)
+            this.tiles[ship.R + step.y * i][ship.C + step.x * i].ship = null;
+        this.ShipCountLabel[typeindex]._components[0].string = ++this.shipCount[typeindex];
+        this.ships.splice(this.ships.indexOf(ship), 1);
+        ship.node.destroy();
+        this.deselectTile();
+    },
+    changeScene:function(){
+        window.Global={tiles:this.tiles};
+        cc.director.loadScene("BattleScene"); 
+    },
     //EventHandler--------------------//
     onTouchStart: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex == null)
             return;
-        if (hex.manager.selectTile(hex))
-            hex.manager.showShipPreview(hex.R, hex.C);
+        hex.manager.selectTile(hex);
         console.log("시작", hex.R, hex.C);
     },
     onTouchMove: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex == null || hex.manager.shipPreview == null)
             return;
-        hex.manager.updateCursorDirec(hex, event.touch);
+        hex.manager.updateCursorDirec(event.touch.getLocation());
     },
     onTouchCancel: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex == null || hex.manager.shipPreview == null)
             return;
         console.log("취소", hex.R, hex.C);
-        hex.manager.spwanShip(hex.R, hex.C);
+        hex.manager.spwanShip();
         hex.manager.coverShipPreview();
     },
     onTouchEnd: function (event) {
@@ -231,17 +248,12 @@ cc.Class({
         this.shipType = customEventData;
         console.log(this.shipType);
     },
-    onDeleteButtonClick:function(event){
-        if (this.target == null || this.target.ship == null)
-            return;
-        var ship=this.target.ship;
-        var step=EDirec.getVector(ship.direc);
-        for (var i = 0; i < ship.shipType; ++i) {
-            this.tiles[ship.R+step.y*i][ship.C+step.x*i].ship=null;
-        }
-        this.ShipCountLabel[ship.shipType-2]._components[0].string = ++this.shipCount[ship.shipType-2];
-        this.ships.splice(this.ships.indexOf(ship),1);
-        ship.node.destroy();
+    onDeleteButtonClick: function (event) {
+        if (this.target != null && this.target.ship != null)
+            this.deleteTargetShip();
+    },
+    onCompleteButtonClick:function(event){
+        this.changeScene();
     },
     //--------------------------------//
     update(dt) {

@@ -7,11 +7,16 @@ var Ship=cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {},
-
+    init:function(R,C,type,direc,manager){
+        this.R = R;
+        this.C = C;
+        this.type = type;
+        this.direc = direc;
+        this.manager=manager;
+    },
     start () {
 
     },
 
     // update (dt) {},
 });
-module.exports.Ship = Ship;

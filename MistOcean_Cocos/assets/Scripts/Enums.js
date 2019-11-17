@@ -28,16 +28,23 @@ var EDirec=cc.Enum({
             case EDirec.LEFTUP:return 120;
             default : return 0;
         }
-    }
-
+    },
     
 });
 var ShipType=cc.Enum({
     default:-1,
 
-    Small:1,
-    Middle:2,
-    Big:3
+    Small:2,
+    Middle:3,
+    Big:4,
+    toString:function(type){
+        switch(type){
+            case this.Small:return "Small";
+            case this.Middle:return "Middle";
+            case this.Big:return "Big";
+            default: return "Default";
+        }
+    }
 })
 module.exports.EDirec = EDirec;
 module.exports.ShipType = ShipType;
