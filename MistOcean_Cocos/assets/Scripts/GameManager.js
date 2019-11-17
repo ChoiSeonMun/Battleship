@@ -16,6 +16,14 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
+        EnemyscrollView: {
+            default: null,
+            type: cc.Node,
+        },
+        PageScorllButton:{
+            default : null,
+            type: cc.Node
+        },
         hexTilePrefab: {
             default: null,
             type: cc.Prefab,
@@ -81,7 +89,17 @@ cc.Class({
                 this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2);
         }
     },
-    spawnTile: function (R, C) {    //R행C열 타일 생성
+    setEvents:function(){//event bubble
+        this.scrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.scrollView);
+        this.scrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.scrollView);
+        this.scrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.scrollView);
+        this.scrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.scrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.EnemyscrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.EnemyscrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.EnemyscrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.EnemyscrollView);
+    },
+    spawnTile: function (R, C) {    //hextile prefab의 node를 생성
         var tile = cc.instantiate(this.hexTilePrefab);
         tile.setPosition(this.getTilePos(R, C));
         this.tileContainer.addChild(tile);
