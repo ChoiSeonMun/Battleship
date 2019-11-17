@@ -8,9 +8,10 @@ cc.Class({
     },
     start() {
     },
-    init:function(R,C,manager){
+    init:function(R,C,type,manager){
         this.R=R;
         this.C=C;
+        this.type=type;
         this.manager=manager;
         this.ship=null;
         this.setEvent();

@@ -29,7 +29,17 @@ var EDirec=cc.Enum({
             default : return 0;
         }
     },
-    
+    getAllDirec:function(){
+        var arr=[];
+        for(var i=1;i<=6;++i)
+            arr.push(EDirec.getVector(i));
+        return arr;
+    },
+    getParallelDirec:function(direc){
+        if(direc>3)
+            return direc-3;
+        return direc+3;
+    }
 });
 
 var ShipType=cc.Enum({
@@ -47,5 +57,19 @@ var ShipType=cc.Enum({
         }
     }
 })
+var ScreenType=cc.Enum({
+    default:-1,
+    Build:1,
+    Battle:2
+});
+var TileType=cc.Enum({
+    default:-1,
+    Build:1,
+    Selectable:2,
+    Selected:3,
+    Enermy:4
+});
 module.exports.EDirec = EDirec;
 module.exports.ShipType = ShipType;
+module.exports.ScreenType = ScreenType;
+module.exports.TileType = TileType;

@@ -1,4 +1,4 @@
-var Ship=cc.Class({
+var Ship = cc.Class({
     extends: cc.Component,
 
     properties: {
@@ -7,14 +7,15 @@ var Ship=cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {},
-    init:function(R,C,type,direc,manager){
+    init: function (R, C, type, direc, manager) {
         this.R = R;
         this.C = C;
         this.type = type;
+        this.damaged = [];
         this.direc = direc;
-        this.manager=manager;
+        this.manager = manager;
     },
-    start () {
+    start() {
 
     },
 

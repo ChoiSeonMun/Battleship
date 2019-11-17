@@ -1,6 +1,8 @@
 var Enums = require('./Enums');
 var EDirec = Enums.EDirec;
 var ShipType = Enums.ShipType;
+var ScreenType = Enums.ScreenType;
+var TileType = Enums.TileType;
 cc.Class({
     extends: cc.Component,
 
@@ -13,16 +15,12 @@ cc.Class({
             type: [cc.Integer]
         },
         tileContainer: {
-            default: null,
-            type: cc.Node,
+            default: [],
+            type: [cc.Node],
         },
-        EnemytileContainer: {
-            default: null,
-            type: cc.Node,
-        },
-        hexTilePrefab: {
-            default: null,
-            type: cc.Prefab,
+        hexTilePrefabs: {
+            default: [],
+            type: [cc.Prefab],
         },
         ShipBlockPrefab: {
             default: null,
@@ -36,42 +34,56 @@ cc.Class({
             default: null,
             type: cc.Prefab,
         },
-        buildPanel:{
-            default:null,
-            type:cc.node
+        buildPanel: {
+            default: null,
+            type: cc.Node
         },
-        battlePanel:{
-            default:null,
-            type:cc.node
+        battlePanel: {
+            default: null,
+            type: cc.Node
         },
-        ShipCountLabel: {
-            default: [],
-            type: [cc.Node],
-        }
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad: function () {
         this.declareVariable();
-        this.setEvents();
+        this.enableBuildEvents();
         this.setShipPrefabs();
         this.spawnTiles();
     },
-    setEvents: function () {//set eventhandler
-        this.tileContainer.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this.tileContainer);
-        this.tileContainer.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this.tileContainer);
-        this.tileContainer.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this.tileContainer);
-        this.tileContainer.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this.tileContainer);
-
-        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this.tileContainer);
-        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this.tileContainer);
-        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this.tileContainer);
-        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this.tileContainer);
+    enableBuildEvents: function () {//set eventhandler
+        var target = this.tileContainer[ScreenType.Build - 1];
+        target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
+        target.on(cc.Node.EventType.TOUCH_MOVE, this.onBuildTouchMove, target);
+        target.on(cc.Node.EventType.TOUCH_CANCEL, this.onBuildTouchCancel, target);
+        target.on(cc.Node.EventType.TOUCH_END, this.onBuildTouchEnd, target);
+    },
+    disableBuildEvents: function () {
+        var target = this.tileContainer[ScreenType.Build - 1];
+        target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
+        target.off(cc.Node.EventType.TOUCH_MOVE, this.onBuildTouchMove, target);
+        target.off(cc.Node.EventType.TOUCH_CANCEL, this.onBuildTouchCancel, target);
+        target.off(cc.Node.EventType.TOUCH_END, this.onBuildTouchEnd, target);
+    },
+    enableBattleEvents: function () {//set eventhandler
+        var target = this.tileContainer[ScreenType.Battle - 1];
+        target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
+        target.on(cc.Node.EventType.TOUCH_MOVE, this.onBattleTouchMove, target);
+        target.on(cc.Node.EventType.TOUCH_CANCEL, this.onBattleTouchCancel, target);
+        target.on(cc.Node.EventType.TOUCH_END, this.onBattleTouchEnd, target);
+    },
+    disableBattleEvents: function () {
+        var target = this.tileContainer[ScreenType.Battle - 1];
+        target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
+        target.off(cc.Node.EventType.TOUCH_MOVE, this.onBattleTouchMove, target);
+        target.off(cc.Node.EventType.TOUCH_CANCEL, this.onBattleTouchCancel, target);
+        target.off(cc.Node.EventType.TOUCH_END, this.onBattleTouchEnd, target);
     },
     declareVariable: function () { //declare iner variable
-        var tile = this.hexTilePrefab.data;
+        var tile = this.hexTilePrefabs[0].data;
         this.tiles = [];
+        this.enermyTiles = [];
         this.ships = [];
         this.shipPrefabs = [];
         this.ShipPreviewPrefabs = [];
@@ -80,6 +92,7 @@ cc.Class({
         this.hilight = null;
         this.shipType = ShipType.Small;
         this.cursorDirec = EDirec.default;
+        this.currentScreen = ScreenType.Build;
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);
     },
@@ -87,23 +100,16 @@ cc.Class({
         for (var r = 0; r < this.height; ++r) {
             this.tiles[r] = [];
             for (var c = 0; c < this.width; ++c)
-                this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2);
+                this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, TileType.Build);
         }
     },
-    spawnTile: function (R, C) {    //hextile prefab의 node를 생성
-        var tile = cc.instantiate(this.hexTilePrefab);
+    spawnTile: function (R, C, type) {    //hextile prefab의 node를 생성
+        var tile = cc.instantiate(this.hexTilePrefabs[type - 1]);
         tile.setPosition(this.getTilePos(R, C));
-        this.tileContainer.addChild(tile);
+        this.tileContainer[this.currentScreen - 1].addChild(tile);
 
         var hex = tile.getComponent("HexTile");
-        hex.init(R, C, this);
-
-        var tile2 = cc.instantiate(this.hexTilePrefab);
-        tile2.setPosition(this.getTilePos(R, C));
-        this.EnemytileContainer.addChild(tile2);
-
-        var hex2 = tile2.getComponent("HexTile");
-        hex2.init(R, C, this);
+        hex.init(R, C, type, this);
 
         return hex;
     },
@@ -132,7 +138,7 @@ cc.Class({
     },
     getRealTilePos: function (R, C) {   //tile node의 실제 pos를 반환
         var pos = this.getTilePos(R, C);
-        pos.y += this.tileContainer.position.y;
+        pos.y += this.tileContainer[0].position.y;
         return pos;
     },
     getEdirect: function (origin, forward) {//v2 to v2의 방향을 계산
@@ -151,13 +157,13 @@ cc.Class({
         this.target = hex;
         if (this.hilight == null) {
             this.hilight = cc.instantiate(this.TileHilightPrefab);
-            this.tileContainer.addChild(this.hilight);
+            this.tileContainer[this.currentScreen - 1].addChild(this.hilight);
         }
         this.hilight.setPosition(this.getTilePos(hex.R, hex.C));
         hex.manager.showShipPreview();
     },
-    deselectTile:function(){//target 해제
-        if(this.hilight!=null)
+    deselectTile: function () {//target 해제
+        if (this.hilight != null)
             this.hilight.destroy();
         this.hilight = null;
         this.target = null;
@@ -170,7 +176,7 @@ cc.Class({
             return;
         this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[typeindex]);
         this.shipPreview.setPosition(this.getTilePos(R, C));
-        this.tileContainer.addChild(this.shipPreview);
+        this.tileContainer[this.currentScreen - 1].addChild(this.shipPreview);
     },
     updateCursorDirec: function (forward) {  //커서방향 갱신
         var origin = this.getRealTilePos(this.target.R, this.target.C);
@@ -194,15 +200,14 @@ cc.Class({
         var ship = cc.instantiate(this.shipPrefabs[typeindex]);
         ship.angle = EDirec.getAngle(this.cursorDirec);
         ship.setPosition(this.getTilePos(R, C));
-        this.tileContainer.addChild(ship);
+        this.tileContainer[this.currentScreen - 1].addChild(ship);
         this.ships.push(ship);
 
         var sc = ship.getComponent("Ship");
         sc.init(R, C, this.shipType, this.cursorDirec, this);
         for (var i = 0; i < this.shipType; ++i)
             this.tiles[R + step.y * i][C + step.x * i].ship = sc;
-
-        this.ShipCountLabel[typeindex]._components[0].string = --this.shipCount[typeindex];
+        this.buildPanel.getComponent("BuildPanel").setShipCount(typeindex, --this.shipCount[typeindex]);
         this.deselectTile();
     },
     isValidShip: function (R, C, type, direc) {  //배의 유효성 검사
@@ -213,49 +218,114 @@ cc.Class({
         }
         return true;
     },
-    isValidTile: function (R, C) {  //타일의 유효성 검사
-        var inrange = function (R, C, w, h) { return R >= 0 && C >= 0 && R < h && C < w * 2 + R % 2 - 1 };
-        if (!inrange(R, C, this.width, this.height))
-            return false;
-        if (this.tiles[R][C].ship != null)
-            return false;
-        for (var t = 1; t <= 6; ++t) {
-            var v = EDirec.getVector(t);
-            if (inrange(R + v.y, C + v.x, this.width, this.height) && this.tiles[R + v.y][C + v.x].ship != null)
-                return false;
-        }
-        return true;
+    inRange:function(R,C){
+        return R >= 0 && C >= 0 && R < this.height && C < this.width * 2 + R % 2 - 1;
     },
-    deleteTargetShip:function(){    //target 위의 ship 제거
+    isValidTile: function (R, C) {  //타일의 유효성 검사
+        if (!this.inRange(R, C) || this.tiles[R][C].ship != null)
+            return false;
+        var isvalid = true;
+        var vecs=EDirec.getAllDirec();
+        for (var v of vecs)
+            if (this.inRange(R + v.y, C + v.x) && this.tiles[R + v.y][C + v.x].ship != null)
+                isvalid = false;
+        return isvalid;
+    },
+
+    deleteTargetShip: function () {    //target 위의 ship 제거
         var ship = this.target.ship;
         var step = EDirec.getVector(ship.direc);
-        var typeindex=ship.type-2;
+        var typeindex = ship.type - 2;
         for (var i = 0; i < ship.type; ++i)
             this.tiles[ship.R + step.y * i][ship.C + step.x * i].ship = null;
-        this.ShipCountLabel[typeindex]._components[0].string = ++this.shipCount[typeindex];
+        this.buildPanel.getComponent("BuildPanel").setShipCount(typeindex, ++this.shipCount[typeindex]);
         this.ships.splice(this.ships.indexOf(ship), 1);
         ship.node.destroy();
         this.deselectTile();
     },
-    changeScene:function(){
-        window.Global={tiles:this.tiles};
-        cc.director.loadScene("BattleScene"); 
+    buildComplete: function () {
+        if (this.shipCount[0] + this.shipCount[1] + this.shipCount[2] != 0) {
+            console.log("배치가 끝나지 않음");
+            return;
+        }
+        this.currentScreen = ScreenType.Battle;
+        this.buildPanel.setPosition(cc.v2(-884, this.buildPanel._position.y));
+        this.battlePanel.getComponent("BattlePanel").onChangeButtonClick();
+        this.battlePanel.setPosition(cc.v2(0, this.battlePanel._position.y));
+        this.disableBuildEvents();
+        this.enableBattleEvents();
+        this.spawnEnermyTiles();
+    },
+    spawnEnermyTiles: function () {
+        for (var r = 0; r < this.height; ++r) {
+            this.enermyTiles[r] = [];
+            for (var c = 0; c < this.width; ++c)
+                this.enermyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, TileType.Selectable);
+        }
+    },
+    attackTarget: function () {
+        if (this.currentScreen != ScreenType.Battle || this.target == null || this.target.type != TileType.Selectable)
+            return;
+        var R=this.target.R;
+        var C=this.target.C;
+        if(this.isEnermy(R,C))
+            this.attackEnermy(R,C);
+        else
+            this.enermyTiles[R][C]=this.spawnTile(R,C,TileType.Selected);
+        this.target.node.destroy();
+        this.deselectTile();
+    },
+    isEnermy:function(R,C){
+        return this.tiles[R][C].ship!=null;
+    },
+    attackEnermy:function(R,C){
+        this.enermyTiles[R][C]=this.spawnTile(R,C,TileType.Enermy);
+        var enermyship=this.tiles[R][C].ship;
+        enermyship.damaged.push(cc.v2(C,R));
+        if(enermyship.damaged.length==enermyship.type)
+            this.attackAround(enermyship);
+        else if(enermyship.damaged.length>1)
+            this.attackSide(enermyship);
+    },
+    attackAround:function(ship){
+        var direcs=EDirec.getAllDirec();
+        this.attackDirec(ship,direcs);
+    },
+    attackSide:function(ship){
+        var direcs=[];
+        var pdirec=EDirec.getParallelDirec(ship.direc);
+        for(var i=1;i<=6;++i){
+            if(i!=ship.direc&&i!=pdirec)
+                direcs.push(EDirec.getVector(i));
+        }
+        this.attackDirec(ship,direcs);
+    },
+    attackDirec:function(ship,direcs){
+        for(var v1 of ship.damaged){
+            for(var v2 of direcs){
+                var R=v1.y+v2.y;
+                var C=v1.x+v2.x;
+                if(this.inRange(R,C)&&this.enermyTiles[R][C].type==TileType.Selectable){
+                    this.enermyTiles[R][C].node.destroy();
+                    this.enermyTiles[R][C]=this.spawnTile(R,C,TileType.Selected);
+                }
+            }
+        }
     },
     //EventHandler--------------------//
     onTouchStart: function (event) {
         var hex = event.target.getComponent("HexTile");
-        if (hex == null)
-            return;
-        hex.manager.selectTile(hex);
+        if (hex != null)
+            hex.manager.selectTile(hex);
         console.log("시작", hex.R, hex.C);
     },
-    onTouchMove: function (event) {
+    onBuildTouchMove: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex == null || hex.manager.shipPreview == null)
             return;
         hex.manager.updateCursorDirec(event.touch.getLocation());
     },
-    onTouchCancel: function (event) {
+    onBuildTouchCancel: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex == null || hex.manager.shipPreview == null)
             return;
@@ -263,23 +333,21 @@ cc.Class({
         hex.manager.spwanShip();
         hex.manager.coverShipPreview();
     },
-    onTouchEnd: function (event) {
+    onBuildTouchEnd: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex == null || hex.manager.shipPreview == null)
             return;
         console.log("종료", hex.R, hex.C);
         hex.manager.coverShipPreview();
     },
-    onSettingButtonClick: function (event, customEventData) {
-        this.shipType = customEventData;
-        console.log(this.shipType);
+    onBattleTouchMove: function (event) {
+        console.log("공격이동");
     },
-    onDeleteButtonClick: function (event) {
-        if (this.target != null && this.target.ship != null)
-            this.deleteTargetShip();
+    onBattleTouchCancel: function (event) {
+        console.log("공격취소");
     },
-    onCompleteButtonClick:function(event){
-        this.changeScene();
+    onBattleTouchEnd: function (event) {
+        console.log("공격끝");
     },
     //--------------------------------//
     update(dt) {
