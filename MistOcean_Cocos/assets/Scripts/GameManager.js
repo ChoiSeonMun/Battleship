@@ -16,13 +16,9 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
-        EnemyscrollView: {
+        EnemytileContainer: {
             default: null,
             type: cc.Node,
-        },
-        PageScorllButton:{
-            default : null,
-            type: cc.Node
         },
         hexTilePrefab: {
             default: null,
@@ -67,6 +63,11 @@ cc.Class({
         this.tileContainer.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this.tileContainer);
         this.tileContainer.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this.tileContainer);
         this.tileContainer.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this.tileContainer);
+
+        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this.tileContainer);
+        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this.tileContainer);
+        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this.tileContainer);
+        this.EnemytileContainer.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this.tileContainer);
     },
     declareVariable: function () { //declare iner variable
         var tile = this.hexTilePrefab.data;
@@ -89,22 +90,21 @@ cc.Class({
                 this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2);
         }
     },
-    setEvents:function(){//event bubble
-        this.scrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.scrollView);
-        this.scrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.scrollView);
-        this.scrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.scrollView);
-        this.scrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.scrollView);
-        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.EnemyscrollView);
-        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.EnemyscrollView);
-        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.EnemyscrollView);
-        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.EnemyscrollView);
-    },
     spawnTile: function (R, C) {    //hextile prefab의 node를 생성
         var tile = cc.instantiate(this.hexTilePrefab);
         tile.setPosition(this.getTilePos(R, C));
         this.tileContainer.addChild(tile);
+
         var hex = tile.getComponent("HexTile");
         hex.init(R, C, this);
+
+        var tile2 = cc.instantiate(this.hexTilePrefab);
+        tile2.setPosition(this.getTilePos(R, C));
+        this.EnemytileContainer.addChild(tile2);
+
+        var hex2 = tile2.getComponent("HexTile");
+        hex2.init(R, C, this);
+
         return hex;
     },
     getTilePos: function (R, C) {   //R행C열 타일의 위치 반환
