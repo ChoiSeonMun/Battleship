@@ -12,6 +12,14 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
+        EnemyscrollView: {
+            default: null,
+            type: cc.Node,
+        },
+        PageScorllButton:{
+            default : null,
+            type: cc.Node
+        },
         hexTilePrefab: {
             default: null,
             type: cc.Prefab,
@@ -33,6 +41,7 @@ cc.Class({
         this.DX=parseInt(this.DX);
         this.DY=tile._contentSize.height*tile._scale.y*0.75 -2;
         this.DY=parseInt(this.DY);
+
         for (var r = 0; r < this.height; ++r) {
             this.tiles[r] = [];
             for (var c = 0; c < this.width; ++c) 
@@ -44,6 +53,10 @@ cc.Class({
         this.scrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.scrollView);
         this.scrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.scrollView);
         this.scrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.scrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_START,this.onTouchStart, this.EnemyscrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_MOVE,this.onTouchMove, this.EnemyscrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_CANCEL,this.onTouchCancel, this.EnemyscrollView);
+        this.EnemyscrollView.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd, this.EnemyscrollView);
     },
     spawnTile: function (R, C) {    //hextile prefab의 node를 생성
         var tile = cc.instantiate(this.hexTilePrefab);
@@ -51,9 +64,20 @@ cc.Class({
         hex.R = R;
         hex.C = C;
         hex.manager=this;
+        
         this.scrollView.addChild(tile);
         tile.setPosition(this.getTilePos(R,C));
         hex.setEvent();
+
+        var tile2 = cc.instantiate(this.hexTilePrefab);
+        var hex2 = tile2.getComponent("HexTile");
+        hex2.R = R;
+        hex2.C = C;
+        hex2.manager=this;
+        
+        this.EnemyscrollView.addChild(tile2);
+        tile2.setPosition(this.getTilePos(R,C));
+        hex2.setEvent();
         return hex;
     },
     getTilePos:function(R,C){   //tile node의 position을 반환
@@ -115,6 +139,6 @@ cc.Class({
             return;
         console.log("종료",hex.R,hex.C);
     },
-     update (dt) {
-     },
+
+
 });

@@ -9,6 +9,7 @@ var EDirec=cc.Enum({
     RIGHTDOWN: 6,
     
 });
+
 var ShipType=cc.Enum({
     default:-1,
 
