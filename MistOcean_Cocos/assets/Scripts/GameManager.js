@@ -12,7 +12,7 @@ cc.Class({
             default: [],
             type: [cc.Integer]
         },
-        scrollView: {
+        tileContainer: {
             default: null,
             type: cc.Node,
         },
@@ -32,6 +32,14 @@ cc.Class({
             default: null,
             type: cc.Prefab,
         },
+        buildPanel:{
+            default:null,
+            type:cc.node
+        },
+        battlePanel:{
+            default:null,
+            type:cc.node
+        },
         ShipCountLabel: {
             default: [],
             type: [cc.Node],
@@ -47,10 +55,10 @@ cc.Class({
         this.spawnTiles();
     },
     setEvents: function () {//set eventhandler
-        this.scrollView.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this.scrollView);
-        this.scrollView.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this.scrollView);
-        this.scrollView.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this.scrollView);
-        this.scrollView.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this.scrollView);
+        this.tileContainer.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this.tileContainer);
+        this.tileContainer.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this.tileContainer);
+        this.tileContainer.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this.tileContainer);
+        this.tileContainer.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this.tileContainer);
     },
     declareVariable: function () { //declare iner variable
         var tile = this.hexTilePrefab.data;
@@ -76,7 +84,7 @@ cc.Class({
     spawnTile: function (R, C) {    //R행C열 타일 생성
         var tile = cc.instantiate(this.hexTilePrefab);
         tile.setPosition(this.getTilePos(R, C));
-        this.scrollView.addChild(tile);
+        this.tileContainer.addChild(tile);
         var hex = tile.getComponent("HexTile");
         hex.init(R, C, this);
         return hex;
@@ -106,7 +114,7 @@ cc.Class({
     },
     getRealTilePos: function (R, C) {   //tile node의 실제 pos를 반환
         var pos = this.getTilePos(R, C);
-        pos.y += this.scrollView.position.y;
+        pos.y += this.tileContainer.position.y;
         return pos;
     },
     getEdirect: function (origin, forward) {//v2 to v2의 방향을 계산
@@ -125,7 +133,7 @@ cc.Class({
         this.target = hex;
         if (this.hilight == null) {
             this.hilight = cc.instantiate(this.TileHilightPrefab);
-            this.scrollView.addChild(this.hilight);
+            this.tileContainer.addChild(this.hilight);
         }
         this.hilight.setPosition(this.getTilePos(hex.R, hex.C));
         hex.manager.showShipPreview();
@@ -144,7 +152,7 @@ cc.Class({
             return;
         this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[typeindex]);
         this.shipPreview.setPosition(this.getTilePos(R, C));
-        this.scrollView.addChild(this.shipPreview);
+        this.tileContainer.addChild(this.shipPreview);
     },
     updateCursorDirec: function (forward) {  //커서방향 갱신
         var origin = this.getRealTilePos(this.target.R, this.target.C);
@@ -168,7 +176,7 @@ cc.Class({
         var ship = cc.instantiate(this.shipPrefabs[typeindex]);
         ship.angle = EDirec.getAngle(this.cursorDirec);
         ship.setPosition(this.getTilePos(R, C));
-        this.scrollView.addChild(ship);
+        this.tileContainer.addChild(ship);
         this.ships.push(ship);
 
         var sc = ship.getComponent("Ship");
