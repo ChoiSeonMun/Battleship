@@ -80,7 +80,15 @@ var TileType = cc.Enum({
     Selected: 3,
     Enermy: 4
 });
+var ZOrder=cc.Enum({
+    default: -1,
+    Tile: 1,
+    Ship: 2,
+    Preview: 3,
+    Hilight: 4
+});
 module.exports.EDirec = EDirec;
 module.exports.ShipType = ShipType;
 module.exports.ScreenType = ScreenType;
 module.exports.TileType = TileType;
+module.exports.ZOrder = ZOrder;

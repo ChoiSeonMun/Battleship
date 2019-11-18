@@ -3,6 +3,7 @@ var EDirec = Enums.EDirec;
 var ShipType = Enums.ShipType;
 var ScreenType = Enums.ScreenType;
 var TileType = Enums.TileType;
+var ZOrder = Enums.ZOrder;
 cc.Class({
     extends: cc.Component,
 
@@ -96,6 +97,7 @@ cc.Class({
     },
     spawnTile: function (R, C, type) {    //현재 screen R,C위치에 type형 tile을 생성
         var tile = cc.instantiate(this.hexTilePrefabs[type - 1]);
+        tile.zIndex=ZOrder.Tile;
         tile.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(tile);
 
@@ -145,6 +147,7 @@ cc.Class({
     showTileHilight:function(R,C){  //현재 화면 R,C위치에 hilight 생성
         if (this.hilight == null) {
             this.hilight = cc.instantiate(this.TileHilightPrefab);
+            this.hilight.zIndex=ZOrder.Hilight;
             this.tileContainer[this.currentScreen - 1].addChild(this.hilight);
         }
         this.hilight.setPosition(this.getTilePos(R, C));
@@ -162,6 +165,7 @@ cc.Class({
         if (this.shipCount[typeindex] <= 0 || !this.isValidTile(R, C))
             return;
         this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[typeindex]);
+        this.shipPreview.zIndex=ZOrder.Preview;
         this.shipPreview.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(this.shipPreview);
     },
@@ -187,6 +191,7 @@ cc.Class({
             return;
 
         var ship = cc.instantiate(this.shipPrefabs[typeindex]);
+        ship.zIndex=ZOrder.Ship;
         ship.angle = EDirec.getAngle(direc);
         ship.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(ship);
@@ -240,6 +245,7 @@ cc.Class({
             console.log("배치가 끝나지 않음");
             return;
         }
+        this.deselectTile();
         this.changeBattlePhase();
     },
     changeBattlePhase:function(){   //battle phase로 전환
