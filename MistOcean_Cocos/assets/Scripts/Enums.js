@@ -1,4 +1,4 @@
-var EDirec = cc.Enum({
+cc.EDirec = cc.Enum({
     default: -1,
 
     RIGHTUP: 1,
@@ -9,23 +9,23 @@ var EDirec = cc.Enum({
     LEFTUP: 6,
     getVector: function (direc) {
         switch (direc) {
-            case EDirec.RIGHTUP: return cc.v2(1, 1);
-            case EDirec.RIGHT: return cc.v2(2, 0);
-            case EDirec.RIGHTDOWN: return cc.v2(1, -1);
-            case EDirec.LEFTDOWN: return cc.v2(-1, -1);
-            case EDirec.LEFT: return cc.v2(-2, 0);
-            case EDirec.LEFTUP: return cc.v2(-1, 1);
+            case this.RIGHTUP: return cc.v2(1, 1);
+            case this.RIGHT: return cc.v2(2, 0);
+            case this.RIGHTDOWN: return cc.v2(1, -1);
+            case this.LEFTDOWN: return cc.v2(-1, -1);
+            case this.LEFT: return cc.v2(-2, 0);
+            case this.LEFTUP: return cc.v2(-1, 1);
             default: return cc.v2(0, 0);
         }
     },
     getAngle: function (direc) {
         switch (direc) {
-            case EDirec.RIGHTUP: return 60;
-            case EDirec.RIGHT: return 0;
-            case EDirec.RIGHTDOWN: return 300;
-            case EDirec.LEFTDOWN: return 240;
-            case EDirec.LEFT: return 180;
-            case EDirec.LEFTUP: return 120;
+            case this.RIGHTUP: return 60;
+            case this.RIGHT: return 0;
+            case this.RIGHTDOWN: return 300;
+            case this.LEFTDOWN: return 240;
+            case this.LEFT: return 180;
+            case this.LEFTUP: return 120;
             default: return 0;
         }
     },
@@ -40,7 +40,7 @@ var EDirec = cc.Enum({
     getAllDirec: function () {
         var arr = [];
         for (var i = 1; i <= 6; ++i)
-            arr.push(EDirec.getVector(i));
+            arr.push(this.getVector(i));
         return arr;
     },
     getParallelDirec: function (direc) {
@@ -50,7 +50,7 @@ var EDirec = cc.Enum({
     }
 });
 
-var ShipType = cc.Enum({
+cc.ShipType = cc.Enum({
     default: -1,
 
     Small: 2,
@@ -68,27 +68,31 @@ var ShipType = cc.Enum({
         return [2, 3, 4];
     }
 })
-var ScreenType = cc.Enum({
+cc.ScreenType = cc.Enum({
     default: -1,
     Build: 1,
     Battle: 2
 });
-var TileType = cc.Enum({
+cc.TileType = cc.Enum({
     default: -1,
     Build: 1,
     Selectable: 2,
     Selected: 3,
     Enermy: 4
 });
-var ZOrder=cc.Enum({
+cc.ZOrder=cc.Enum({
     default: -1,
     Tile: 1,
     Ship: 2,
     Preview: 3,
     Hilight: 4
 });
-module.exports.EDirec = EDirec;
-module.exports.ShipType = ShipType;
-module.exports.ScreenType = ScreenType;
-module.exports.TileType = TileType;
-module.exports.ZOrder = ZOrder;
+cc.EventType=cc.Enum({
+    default:-1,
+    Login:1
+});
+cc.CodeType=cc.Enum({
+    default:-1,
+    Sucsess:1,
+    Error:2
+});

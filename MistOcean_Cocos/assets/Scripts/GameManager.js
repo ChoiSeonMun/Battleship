@@ -1,9 +1,3 @@
-var Enums = require('./Enums');
-var EDirec = Enums.EDirec;
-var ShipType = Enums.ShipType;
-var ScreenType = Enums.ScreenType;
-var TileType = Enums.TileType;
-var ZOrder = Enums.ZOrder;
 cc.Class({
     extends: cc.Component,
 
@@ -54,14 +48,14 @@ cc.Class({
         this.spawnBuildTiles();
     },
     enableBuildEvents: function () {//set eventhandler
-        var target = this.tileContainer[ScreenType.Build - 1];
+        var target = this.tileContainer[cc.ScreenType.Build - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
         target.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
         target.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, target);
     },
     disableBuildEvents: function () {
-        var target = this.tileContainer[ScreenType.Build - 1];
+        var target = this.tileContainer[cc.ScreenType.Build - 1];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.off(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
         target.off(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
@@ -69,7 +63,7 @@ cc.Class({
     },
     enableBattleEvents: function () {
         this.disableBuildEvents();
-        var target = this.tileContainer[ScreenType.Battle - 1];
+        var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
     declareVariable: function () { //declare iner variable
@@ -82,9 +76,9 @@ cc.Class({
         this.shipPreview = null;
         this.target = null;
         this.hilight = null;
-        this.shipType = ShipType.Small;
-        this.cursorDirec = EDirec.default;
-        this.currentScreen = ScreenType.Build;
+        this.shipType = cc.ShipType.Small;
+        this.cursorDirec = cc.EDirec.default;
+        this.currentScreen = cc.ScreenType.Build;
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);
     },
@@ -92,12 +86,12 @@ cc.Class({
         for (var r = 0; r < this.height; ++r) {
             this.tiles[r] = [];
             for (var c = 0; c < this.width; ++c)
-                this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, TileType.Build);
+                this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Build);
         }
     },
     spawnTile: function (R, C, type) {    //현재 screen R,C위치에 type형 tile을 생성
         var tile = cc.instantiate(this.hexTilePrefabs[type - 1]);
-        tile.zIndex=ZOrder.Tile;
+        tile.zIndex=cc.ZOrder.Tile;
         tile.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(tile);
 
@@ -112,10 +106,10 @@ cc.Class({
         return cc.v2(x, y);
     },
     setShipPrefabs: function () {  //모든 종류 배의 prefab과 preview생성
-        for (var t of ShipType.getAllTypes()) {
-            var s = new cc.Node("ShipPrefab" + ShipType.toString(t));
+        for (var t of cc.ShipType.getAllTypes()) {
+            var s = new cc.Node("ShipPrefab" + cc.ShipType.toString(t));
             s.addComponent("Ship");
-            var sp = new cc.Node("ShipPreviewPrefab" + ShipType.toString(t));
+            var sp = new cc.Node("ShipPreviewPrefab" + cc.ShipType.toString(t));
             for (var j = 0; j < t; ++j) {
                 var b = cc.instantiate(this.ShipBlockPrefab);
                 b.setPosition(cc.v2(this.DX * j, 0));
@@ -134,20 +128,20 @@ cc.Class({
         pos.y += this.tileContainer[0].parent.position.y;
         return pos;
     },
-    getEdirect: function (origin, forward) {//v2 to v2의 방향을 계산
+    getDirect: function (origin, forward) {//v2 to v2의 방향을 계산
         var angle = Math.atan2(forward.y - origin.y, forward.x - origin.x) * 180 / Math.PI;
-        return EDirec.getDirec(angle);
+        return cc.EDirec.getDirec(angle);
     },
     selectTile: function (hex) {       //target을 지정하고 hilight와 preview 생성
         this.target = hex;
         this.showTileHilight(hex.R,hex.C);
-        if(this.currentScreen==ScreenType.Build)
+        if(this.currentScreen==cc.ScreenType.Build)
             this.showShipPreview();
     },
     showTileHilight:function(R,C){  //현재 화면 R,C위치에 hilight 생성
         if (this.hilight == null) {
             this.hilight = cc.instantiate(this.TileHilightPrefab);
-            this.hilight.zIndex=ZOrder.Hilight;
+            this.hilight.zIndex=cc.ZOrder.Hilight;
             this.tileContainer[this.currentScreen - 1].addChild(this.hilight);
         }
         this.hilight.setPosition(this.getTilePos(R, C));
@@ -165,7 +159,7 @@ cc.Class({
         if (this.shipCount[typeindex] <= 0 || !this.isValidTile(R, C))
             return;
         this.shipPreview = cc.instantiate(this.ShipPreviewPrefabs[typeindex]);
-        this.shipPreview.zIndex=ZOrder.Preview;
+        this.shipPreview.zIndex=cc.ZOrder.Preview;
         this.shipPreview.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(this.shipPreview);
     },
@@ -176,23 +170,23 @@ cc.Class({
     },
     updateCursorDirec: function (forward) {  //커서방향 갱신
         var origin = this.getRealTilePos(this.target.R, this.target.C);
-        this.cursorDirec = this.getEdirect(origin, forward);
-        this.shipPreview.angle = EDirec.getAngle(this.cursorDirec);
+        this.cursorDirec = this.getDirect(origin, forward);
+        this.shipPreview.angle = cc.EDirec.getAngle(this.cursorDirec);
     },
     spwanShip: function () {        //target위치 cursor 방향에 배 생성
         var R = this.target.R;
         var C = this.target.C;
         var direc=this.cursorDirec;
         var type=this.shipType;
-        var step = EDirec.getVector(direc);
+        var step = cc.EDirec.getVector(direc);
         var typeindex = type - 2;
 
         if (!this.isValidShip(R, C, type, direc))
             return;
 
         var ship = cc.instantiate(this.shipPrefabs[typeindex]);
-        ship.zIndex=ZOrder.Ship;
-        ship.angle = EDirec.getAngle(direc);
+        ship.zIndex=cc.ZOrder.Ship;
+        ship.angle = cc.EDirec.getAngle(direc);
         ship.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(ship);
         this.ships.push(ship);
@@ -212,7 +206,7 @@ cc.Class({
         this.battlePanel.getComponent("BattlePanel").setShipCount(typeindex, --this.shipCount[typeindex]);
     },
     isValidShip: function (R, C, type, direc) {  //배의 유효성 검사
-        var step = EDirec.getVector(direc);
+        var step = cc.EDirec.getVector(direc);
         for (var i = 0; i < type; ++i) {
             if (!this.isValidTile(R + step.y * i, C + step.x * i))
                 return false;
@@ -225,14 +219,14 @@ cc.Class({
     isValidTile: function (R, C) {  //타일의 유효성 검사
         if (!this.inRange(R, C) || this.tiles[R][C].ship != null)   // 위치가 유효하지 않으면 false
             return false;
-        for (var v of EDirec.getAllDirec())
+        for (var v of cc.EDirec.getAllDirec())
             if (this.inRange(R + v.y, C + v.x) && this.tiles[R + v.y][C + v.x].ship != null)    //근처에 배가 있으면 false
                 return false;
         return true;
     },
     deleteTargetShip: function () {    //target 위의 ship 제거
         var ship = this.target.ship;
-        var step = EDirec.getVector(ship.direc);
+        var step = cc.EDirec.getVector(ship.direc);
         for (var i = 0; i < ship.type; ++i)
             this.tiles[ship.R + step.y * i][ship.C + step.x * i].ship = null;
         this.buildShip(ship.type-2, false);
@@ -249,7 +243,7 @@ cc.Class({
         this.changeBattlePhase();
     },
     changeBattlePhase:function(){   //battle phase로 전환
-        this.currentScreen = ScreenType.Battle;
+        this.currentScreen = cc.ScreenType.Battle;
         this.buildPanel.setPosition(cc.v2(-884, 0));
         this.battlePanel.setPosition(cc.v2(0, 0));
         this.battlePanel.getComponent("BattlePanel").onChangeButtonClick();
@@ -261,11 +255,11 @@ cc.Class({
         for (var r = 0; r < this.height; ++r) {
             this.enermyTiles[r] = [];
             for (var c = 0; c < this.width; ++c)
-                this.enermyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, TileType.Selectable);
+                this.enermyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Selectable);
         }
     },
     attackTarget: function () {     //공격 진행
-        if (this.currentScreen != ScreenType.Battle || this.target == null || this.target.type != TileType.Selectable)
+        if (this.currentScreen != cc.ScreenType.Battle || this.target == null || this.target.type != cc.TileType.Selectable)
             return;
         var R = this.target.R;
         var C = this.target.C;
@@ -277,13 +271,13 @@ cc.Class({
         this.deselectTile();
     },
     attackEmpty:function(R,C){  //selectable to selected
-        this.enermyTiles[R][C] = this.spawnTile(R, C, TileType.Selected);
+        this.enermyTiles[R][C] = this.spawnTile(R, C, cc.TileType.Selected);
     },
     isEnermy: function (R, C) { //enermy checker
         return this.tiles[R][C].ship != null;
     },
     attackEnermy: function (R, C) { //selectable to enermy, 없는게 확실한 타일 selected
-        this.enermyTiles[R][C] = this.spawnTile(R, C, TileType.Enermy);
+        this.enermyTiles[R][C] = this.spawnTile(R, C, cc.TileType.Enermy);
 
         var enermyship = this.tiles[R][C].ship;
         enermyship.damaged.push(cc.v2(C, R));
@@ -293,17 +287,17 @@ cc.Class({
             this.attackSide(enermyship);
     },
     attackAround: function (ship) {         //ship 주변 모든 타일 selected
-        var direcs = EDirec.getAllDirec();
+        var direcs = cc.EDirec.getAllDirec();
         this.attackDirec(ship, direcs);
         this.detectShip(ship.type - 2);
 
     },
     attackSide: function (ship) {           //공격당한 ship 양옆을 selected
         var direcs = [];
-        var pdirec = EDirec.getParallelDirec(ship.direc);
+        var pdirec = cc.EDirec.getParallelDirec(ship.direc);
         for (var i = 1; i <= 6; ++i)
             if (i != ship.direc && i != pdirec)
-                direcs.push(EDirec.getVector(i));
+                direcs.push(cc.EDirec.getVector(i));
         this.attackDirec(ship, direcs);
     },
     attackDirec: function (ship, direcs) {  // ship의 공격당한 부분 근처 direcs를 모두 selected
@@ -311,9 +305,9 @@ cc.Class({
             for (var v2 of direcs) {
                 var R = v1.y + v2.y;
                 var C = v1.x + v2.x;
-                if (this.inRange(R, C) && this.enermyTiles[R][C].type == TileType.Selectable) {
+                if (this.inRange(R, C) && this.enermyTiles[R][C].type == cc.TileType.Selectable) {
                     this.enermyTiles[R][C].node.destroy();
-                    this.enermyTiles[R][C] = this.spawnTile(R, C, TileType.Selected);
+                    this.enermyTiles[R][C] = this.spawnTile(R, C, cc.TileType.Selected);
                 }
             }
         }
