@@ -29,12 +29,16 @@ cc.Class({
         var anim2 = this.Page2.getComponent("page2Animation")
 
         if(this.btnTrigger){
-            anim1.ScreenOff();
-            anim2.ScreenOn();
+            this.Page1.setPosition(-884,0,0);
+            this.Page2.setPosition(0,0,0);
+            //anim1.ScreenOff();
+            //anim2.ScreenOn();
         }
         else{
-            anim1.ScreenOn();
-            anim2.ScreenOff();
+            this.Page1.setPosition(0,0,0);
+            this.Page2.setPosition(884,0,0);
+            //anim1.ScreenOn();
+            //anim2.ScreenOff();
         }
         this.btnTrigger = !this.btnTrigger;
     },
