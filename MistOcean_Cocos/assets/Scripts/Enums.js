@@ -37,6 +37,11 @@ cc.EDirec = cc.Enum({
         if (angle < -30) return this.RIGHTDOWN;
         return this.RIGHT;
     },
+    toDirec:function(vec){
+        if(vec.x<0)
+            return vec.y==1?this.LEFTUP:vec.y==0?this.LEFT:this.LEFTDOWN;
+        return vec.y==1?this.RIGHTUP:vec.y==0?this.RIGHT:this.RIGHTDOWN;
+    },
     getAllDirec: function () {
         var arr = [];
         for (var i = 1; i <= 6; ++i)
@@ -76,23 +81,23 @@ cc.ScreenType = cc.Enum({
 cc.TileType = cc.Enum({
     default: -1,
     Build: 1,
-    Selectable: 2,
-    Selected: 3,
-    Enermy: 4
+    Damaged: 2,
+    Bomb: 3,
+    Selectable: 4,
+    Selected: 5,
+    Enermy: 6
 });
-cc.ZOrder=cc.Enum({
+cc.ZOrder = cc.Enum({
     default: -1,
     Tile: 1,
     Ship: 2,
     Preview: 3,
     Hilight: 4
 });
-cc.EventType=cc.Enum({
-    default:-1,
-    Login:1
-});
-cc.CodeType=cc.Enum({
-    default:-1,
-    Sucsess:1,
-    Error:2
+cc.AttackEventType = cc.Enum({
+    default: -1,
+    None: 1,
+    Bomb: 2,
+    Ship: 3,
+    SunkenShip: 4
 });

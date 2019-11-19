@@ -15,6 +15,9 @@ var Ship = cc.Class({
         this.direc = direc;
         this.manager = manager;
     },
+    isSunken:function(){
+        return this.damaged.length == this.type;
+    },
     start() {
 
     },

@@ -23,7 +23,12 @@ cc.Class({
         this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
         this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
     },
-    
+    isShip: function () {
+        return this.ship != null;
+    },
+    isNotSelectable:function(){
+        return this.type!=cc.TileType.Selectable;
+    },
     onTouchStart:function(event){
     },
 
