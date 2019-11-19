@@ -91,22 +91,12 @@ cc.Class({
                 this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Build);
         }
     },
-    spawnTile: function (R, C, type) {    //현재 screen R,C위치에 type형 tile을 생성
+    spawnTile: function (R, C, type, ismytile = true) {    //현재 screen R,C위치에 type형 tile을 생성
         var tile = cc.instantiate(this.hexTilePrefabs[type - 1]);
+        var typeindex = (ismytile ? cc.ScreenType.Build : cc.ScreenType.Battle) - 1;
         tile.zIndex = cc.ZOrder.Tile;
         tile.setPosition(this.getTilePos(R, C));
-        this.tileContainer[cc.ScreenType.Build-1].addChild(tile);
-
-        var hex = tile.getComponent("HexTile");
-        hex.init(R, C, type, this);
-
-        return hex;
-    },
-    spawnBattleTile: function (R, C, type) {    //현재 screen R,C위치에 type형 tile을 생성
-        var tile = cc.instantiate(this.hexTilePrefabs[type - 1]);
-        tile.zIndex = cc.ZOrder.Tile;
-        tile.setPosition(this.getTilePos(R, C));
-        this.tileContainer[cc.ScreenType.Battle-1].addChild(tile);
+        this.tileContainer[typeindex].addChild(tile);
 
         var hex = tile.getComponent("HexTile");
         hex.init(R, C, type, this);
@@ -296,7 +286,7 @@ cc.Class({
         for (var r = 0; r < this.height; ++r) {
             this.enermyTiles[r] = [];
             for (var c = 0; c < this.width; ++c)
-                this.enermyTiles[r][c * 2 + r % 2] = this.spawnBattleTile(r, c * 2 + r % 2, cc.TileType.Selectable);
+                this.enermyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Selectable, false);
         }
     },
     attackTarget: function () {     //공격 진행
@@ -307,7 +297,7 @@ cc.Class({
             return;
         var R = this.target.R;
         var C = this.target.C;
-        var attackType=this.DamageStep(R,C);
+        var attackType = this.DamageStep(R, C);
         this.deselectTile();
     },
     DamageStep: function (R, C) {
@@ -315,6 +305,7 @@ cc.Class({
         switch (attackType) {
             case cc.AttackEventType.None:
                 this.attackEmpty(R, C, true);
+                this.attackEmpty(R, C, false);
                 break;
             case cc.AttackEventType.Bomb:
                 this.bombExplosion(R, C, true);
@@ -338,6 +329,17 @@ cc.Class({
                 return 0;
         }
     },
+    getSelected: function (ismytile) {
+        return ismytile ? cc.TileType.Damaged : cc.TileType.Selected;
+    },
+    getTiles: function (ismytile) {
+        return ismytile ? this.tiles : this.enermyTiles;
+    },
+    attackEmpty: function (R, C, ismytile) {  //selectable to selected
+        var tiles = this.getTiles(ismytile);
+        this.destroyTile(R, C, tiles);
+        tiles[R][C] = this.spawnTile(R, C, this.getSelected(ismytile), ismytile);
+    },
     destroyTile: function (R, C, tiles) {     //R,C 타일을 파괴한다.
         tiles[R][C].node.destroy();
         tiles[R][C] = null;
@@ -347,24 +349,32 @@ cc.Class({
 
         }
     },
-    attackEmpty: function (R, C, ismytile) {  //selectable to selected
-        var tiles = ismytile ? this.tiles : this.enermyTiles;
-        this.destroyTile(R, C, tiles);
-        tiles[R][C] = this.spawnTile(R, C, ismytile ? cc.TileType.Damaged : cc.TileType.Selected);
-    },
     attackMyShip: function (R, C) { //selectable to enermy, 없는게 확실한 타일 selected,끝나고 완파여부 리턴
-        var tiles = this.tiles;
-        var ship = tiles[R][C].ship;
-        this.destroyTile(R, C, tiles);
-        tiles[R][C] = this.spawnTile(R, C,cc.TileType.Damaged);
-        tiles[R][C].ship=ship;
+        var ship = this.tiles[R][C].ship;
+        this.destroyTile(R, C, this.tiles);
+        this.tiles[R][C] = this.spawnTile(R, C, cc.TileType.Damaged);
+        this.tiles[R][C].ship = ship;
         ship.damaged.push(cc.v2(C, R));
         var sunken = ship.isSunken();
-        if (sunken)
+        if (sunken) {
             this.sinkingShip(ship);
-        else
-            this.attackSide(R,C);
+            this.attackIsSunkenShip(R, C);
+        } else {
+            this.attackSide(R, C, true);
+            this.attackIsShip(R, C);
+        }
         return sunken;
+    },
+    attackIsShip: function (R, C) {
+        this.destroyTile(R, C, this.enermyTiles);
+        this.enermyTiles[R][C] = this.spawnTile(R, C, cc.TileType.Enermy, false);
+        this.attackSide(R, C, false);
+    },
+    attackIsSunkenShip: function (R, C) {
+        this.destroyTile(R, C, this.enermyTiles);
+        this.enermyTiles[R][C] = this.spawnTile(R, C, cc.TileType.Enermy, false);
+        var ships = this.getConnections(R, C, this.enermyTiles);
+        this.attackDirec(ships, cc.EDirec.getAllDirec(), false);
     },
     sinkingShip: function (ship) {         //ship 주변 모든 타일 selected
         this.attackDirec(ship.damaged, cc.EDirec.getAllDirec(), true);
@@ -382,48 +392,40 @@ cc.Class({
             }
         }
     },
-    findConnection: function (R, C, tiles) {        //R,C와 연결된 주위 벡터 반환
+    findConnection: function (R, C, tiles) {        //R,C 주위 ship들의 방향벡터 반환
         var vecs = [];
-        for (var v of cc.EDirec.getAllDirec()){
-            if(!this.inRange(R+v.y,C+v.x))
+        for (var v of cc.EDirec.getAllDirec()) {
+            if (!this.inRange(R + v.y, C + v.x))
                 continue;
-            var tile=tiles[R+v.y][C+v.x];
-            if (tile.isShip()&&(
-                tile.type==cc.TileType.Damaged||
-                tile.type==cc.TileType.Enermy
-            )){
+            var tile = tiles[R + v.y][C + v.x];
+            if (tile.isEnermy() || tile.isDamagedShip())
                 vecs.push(v);
-            }
-            }
+        }
         return vecs;
     },
-    getConnections: function (R, C) {
-        var tiles=this.tiles;
-        var center=cc.v2(C, R);
-        var con1 = this.findConnection(R, C, tiles);
-        if (con1.length == 0)
-            return [center];
-        var step = con1[0];
-        if (con1.length == 2)
-            return [center.sub(step), center, center.add(step)];
-        if (this.findConnection(R + step.y, C + step.x, tiles).length == 2)
-            return [center, center.add(step), center.add(step.add(step))];
-        return [center, center.add(step)];
-
-
+    getConnections: function (R, C, tiles) {         //R,C와 연결된 ships[vector] 반환
+        var center = cc.v2(C, R);
+        var ships = [center];
+        var con = this.findConnection(R, C, tiles);
+        for (var c of con)
+            ships.push(center.add(c));
+        if (con.length == 1 &&
+            this.findConnection(ships[1].y, ships[1].x, tiles).length == 2)
+            ships.push(ships[1].add(con[0]));
+        return ships;
     },
-    attackSide: function (R,C) {           //공격당한 ship 양옆을 selected
-        var tiles = this.tiles;
-        var cons = this.getConnections(R, C);
-        if (cons.length == 1)
+    attackSide: function (R, C, ismytile) {           //공격당한 ship 양옆을 selected
+        var tiles = this.getTiles(ismytile);
+        var ships = this.getConnections(R, C, tiles);
+        if (ships.length == 1)
             return;
-        var step = cons[1].sub(cons[0]);
+        var step = ships[1].sub(ships[0]);
         var rstep = step.neg();
         var direcs = [];
-        for(var v of cc.EDirec.getAllDirec())
-            if(!v.equals(step)&&!v.equals(rstep))
+        for (var v of cc.EDirec.getAllDirec())
+            if (!v.equals(step) && !v.equals(rstep))
                 direcs.push(v);
-        this.attackDirec(cons, direcs, true);
+        this.attackDirec(ships, direcs, ismytile);
     },
     //EventHandler--------------------//
     onTouchStart: function (event) {

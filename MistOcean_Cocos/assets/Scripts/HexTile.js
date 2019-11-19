@@ -29,6 +29,12 @@ cc.Class({
     isNotSelectable:function(){
         return this.type!=cc.TileType.Selectable;
     },
+    isDamagedShip:function(){
+        return this.isShip()&&this.type==cc.TileType.Damaged;
+    },
+    isEnermy:function(){
+        return this.type==cc.TileType.Enermy;
+    },
     onTouchStart:function(event){
     },
 
