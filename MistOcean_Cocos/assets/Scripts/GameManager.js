@@ -47,14 +47,14 @@ cc.Class({
         this.setShipPrefabs();
         this.spawnBuildTiles();
     },
-    enableBuildEvents: function () {//set eventhandler
+    enableBuildEvents: function () {                    
         var target = this.tileContainer[cc.ScreenType.Build - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
         target.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
         target.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, target);
     },
-    disableBuildEvents: function () {
+    disableBuildEvents: function () {                   
         var target = this.tileContainer[cc.ScreenType.Build - 1];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.off(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
@@ -65,7 +65,7 @@ cc.Class({
         var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
-    declareVariable: function () { //declare iner variable
+    declareVariable: function () {                      //내부변수 선언
         var tile = this.hexTilePrefabs[0].data;
         this.tiles = [];                            //type:[HexTile], default:Build 내 타일정보들이 저장
         this.enermyTiles = [];                      //type:[HexTile], default:Selectable 상대 타일 정보들이 저장
@@ -84,14 +84,14 @@ cc.Class({
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);            //type:Number, 다음 타일과의 X축 거리
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);    //type:Number, 다음 타일과의 Y축 거리
     },
-    spawnBuildTiles: function () {      //width x hegiht 갯수만큼 build타일 생성
+    spawnBuildTiles: function () {                      //width x hegiht 갯수만큼 build타일 생성
         for (var r = 0; r < this.height; ++r) {
             this.tiles[r] = [];
             for (var c = 0; c < this.width; ++c)
                 this.tiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Build);
         }
     },
-    spawnTile: function (R, C, type, ismytile = true) {    //현재 screen R,C위치에 type형 tile을 생성
+    spawnTile: function (R, C, type, ismytile = true) { //R,C 위치에 type형 tile을 생성
         var tile = cc.instantiate(this.hexTilePrefabs[type - 1]);
         var typeindex = (ismytile ? cc.ScreenType.Build : cc.ScreenType.Battle) - 1;
         tile.zIndex = cc.ZOrder.Tile;
@@ -103,12 +103,12 @@ cc.Class({
 
         return hex;
     },
-    getTilePos: function (R, C) {   //R행C열 타일의 position 반환
+    getTilePos: function (R, C) {                       //R,C 타일의 position 반환
         var x = parseInt(C * this.DX / 2 + this.DX / 2) + this.tileMargin.x;
         var y = parseInt(R * this.DY + this.DY / 1.5) + this.tileMargin.y;
         return cc.v2(x, y);
     },
-    setShipPrefabs: function () {  //모든 종류 배의 prefab과 preview생성
+    setShipPrefabs: function () {                       //모든 종류 배의 prefab과 preview생성
         for (var t of cc.ShipType.getAllTypes()) {
             var s = new cc.Node("ShipPrefab" + cc.ShipType.toString(t));
             s.addComponent("Ship");
@@ -126,22 +126,22 @@ cc.Class({
             this.ShipPreviewPrefabs[t - 2] = sp;
         }
     },
-    getRealTilePos: function (R, C) {   //tile node의 실제 pos를 반환
+    getRealTilePos: function (R, C) {                   //R,C 타일의 실제 pos를 반환
         var pos = this.getTilePos(R, C);
         pos.y += this.tileContainer[0].parent.position.y;
         return pos;
     },
-    getDirect: function (origin, forward) {//v2 to v2의 방향을 계산
+    getDirect: function (origin, forward) {             //v2 to v2의 방향을 계산
         var angle = Math.atan2(forward.y - origin.y, forward.x - origin.x) * 180 / Math.PI;
         return cc.EDirec.getDirec(angle);
     },
-    selectTile: function (hex) {       //target을 지정하고 hilight와 preview 생성
+    selectTile: function (hex) {                        //target을 지정하고 hilight와 preview 생성
         this.target = hex;
         this.showTileHilight(hex.R, hex.C);
         if (this.currentScreen == cc.ScreenType.Build)
             this.showShipPreview();
     },
-    showTileHilight: function (R, C) {  //현재 화면 R,C위치에 hilight 생성
+    showTileHilight: function (R, C) {                  //현재 화면 R,C위치에 hilight 생성
         if (this.hilight == null) {
             this.hilight = cc.instantiate(this.TileHilightPrefab);
             this.hilight.zIndex = cc.ZOrder.Hilight;
@@ -149,13 +149,13 @@ cc.Class({
         }
         this.hilight.setPosition(this.getTilePos(R, C));
     },
-    deselectTile: function () {//target 해제
+    deselectTile: function () {                         //target 해제
         if (this.hilight != null)
             this.hilight.destroy();
         this.hilight = null;
         this.target = null;
     },
-    showShipPreview: function () {  //ship preview 표시
+    showShipPreview: function () {                      //ship preview 표시
         var R = this.target.R;
         var C = this.target.C;
         var typeindex = this.shipType - 2;
@@ -166,17 +166,17 @@ cc.Class({
         this.shipPreview.setPosition(this.getTilePos(R, C));
         this.tileContainer[this.currentScreen - 1].addChild(this.shipPreview);
     },
-    coverShipPreview: function () {    ////ship preview 제거
+    coverShipPreview: function () {                     //ship preview 제거
         if (this.shipPreview != null)
             this.shipPreview.destroy();
         this.shipPreview = null;
     },
-    updateCursorDirec: function (forward) {  //커서방향 갱신
+    updateCursorDirec: function (forward) {             //커서방향 갱신
         var origin = this.getRealTilePos(this.target.R, this.target.C);
         this.cursorDirec = this.getDirect(origin, forward);
         this.shipPreview.angle = cc.EDirec.getAngle(this.cursorDirec);
     },
-    spwanShip: function () {        //target위치 cursor 방향에 배 생성
+    spwanShip: function () {                            //target위치 cursor 방향에 배 생성
         var R = this.target.R;
         var C = this.target.C;
         var direc = this.cursorDirec;
@@ -201,14 +201,14 @@ cc.Class({
         this.buildShip(typeindex);
         this.deselectTile();
     },
-    buildShip: function (typeindex, built = true) {       //배 건설/삭제 후 갯수 변동
+    buildShip: function (typeindex, built = true) {     //배 건설,삭제 후 갯수 변동
         this.shipCount[typeindex] -= built ? 1 : -1;
         this.buildPanel.getComponent("BuildPanel").setShipCount(typeindex, this.shipCount[typeindex]);
     },
-    detectShip: function (typeindex) {     //배를 모두 찾았을 경우 갯수 감소
+    detectShip: function (typeindex) {                  //배를 모두 찾았을 경우 갯수 감소
         this.battlePanel.getComponent("BattlePanel").setShipCount(typeindex, --this.enermyCount[typeindex]);
     },
-    isValidShip: function (R, C, type, direc) {  //배의 유효성 검사
+    isValidShip: function (R, C, type, direc) {         //배의 유효성 검사
         var step = cc.EDirec.getVector(direc);
         for (var i = 0; i < type; ++i) {
             if (!this.isValidTile(R + step.y * i, C + step.x * i))
@@ -216,10 +216,10 @@ cc.Class({
         }
         return true;
     },
-    inRange: function (R, C) {  //위치 유효성 검사
+    inRange: function (R, C) {                          //위치 유효성 검사
         return R >= 0 && C >= 0 && R < this.height && C < this.width * 2 + R % 2 - 1;
     },
-    isValidTile: function (R, C) {  //타일의 유효성 검사
+    isValidTile: function (R, C) {                      //타일의 유효성 검사
         if (!this.inRange(R, C) || this.tiles[R][C].ship != null)   // 위치가 유효하지 않으면 false
             return false;
         for (var v of cc.EDirec.getAllDirec())
@@ -227,7 +227,7 @@ cc.Class({
                 return false;
         return true;
     },
-    deleteTargetShip: function () {    //target 위의 ship 제거
+    deleteTargetShip: function () {                     //target 위의 ship 제거
         var ship = this.target.ship;
         var step = cc.EDirec.getVector(ship.direc);
         for (var i = 0; i < ship.type; ++i)
@@ -237,7 +237,7 @@ cc.Class({
         ship.node.destroy();
         this.deselectTile();
     },
-    buildComplete: function () {    //배치가 완료되면 build event를 비활성화하고 대기
+    buildComplete: function () {                        //배치가 완료되면 build event를 비활성화하고 대기
         if (!this.isLose()) {
             console.log("배치가 끝나지 않음");
             return;
@@ -249,7 +249,7 @@ cc.Class({
         console.log("배치 완료");
         //서버에 완료 알리기
     },
-    assignItems: function () {
+    assignItems: function () {                          //아이템 랜덤 배치
         console.log("폭탄 배치");
         var bombY;
         var bombX;
@@ -266,7 +266,7 @@ cc.Class({
 
         this.changeTile(bombY, bombX, cc.TileType.Bomb);
     },
-    changeBattlePhase: function () {   //battle phase로 전환
+    changeBattlePhase: function () {                    //battle phase로 전환
         if (!this.buildCompleted)
             return;
         console.log("전투 시작");
@@ -277,10 +277,10 @@ cc.Class({
         this.enableBattleEvents();
         this.spawnEnermyTiles();
     },
-    isLose: function () {
+    isLose: function () {                               //
         return this.shipCount[0] + this.shipCount[1] + this.shipCount[2] == 0;
     },
-    changeContainer: function () {         //표시되는 화면 변경
+    changeContainer: function () {                      //표시되는 화면 변경
         console.log("화면 변경");
         switch (this.currentScreen) {
             case cc.ScreenType.Build:
@@ -296,14 +296,14 @@ cc.Class({
             default: break;
         }
     },
-    spawnEnermyTiles: function () { //battle screen에 selectable tile 생성
+    spawnEnermyTiles: function () {                     //battle screen에 selectable tile 생성
         for (var r = 0; r < this.height; ++r) {
             this.enermyTiles[r] = [];
             for (var c = 0; c < this.width; ++c)
                 this.enermyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Selectable, false);
         }
     },
-    attackTarget: function () {     //공격 진행
+    attackTarget: function () {                         //공격 진행
         if (!this.isMyTurn ||                                //내 차례가 아니거나
             this.currentScreen != cc.ScreenType.Battle ||   //battle screen이 아니거나
             this.target == null ||                          //선택된 타일이 없거나
@@ -316,29 +316,29 @@ cc.Class({
         this.updateEnemyTile(attackData);
         this.deselectTile();
     },
-    sendAttack: function (R, C) {
+    sendAttack: function (R, C) {                       //공격 위치 송신
         var response = this.reciveAttack(R, C);
         return response;
     },
-    reciveAttack: function (R, C) {
+    reciveAttack: function (R, C) {                     //공격 위치 수신
         var response = this.DamageStep(R, C);
         return response;
 
     },
-    updateEnemyTile: function (attackData) {
+    updateEnemyTile: function (attackData) {            //공격의 판정 결과에 따라 적 타일 갱신
         var ct = attackData.changeTiles;
         console.log('update enermy info');
         for (var i = 0; i < ct[0].length; ++i)
             this.changeTile(ct[0][i].y, ct[0][i].x, ct[1][i], false);
     },
-    DamageStep: function (R, C) {
+    DamageStep: function (R, C) {                       //공격 받은 후 판정 결과 전달
         var attackData = {};
         attackData.changeTiles = this.tileAttacked(R, C);
         attackData.lose = this.isLose();
         attackData.detectShip = [0, 0, 0];
         return attackData;
     },
-    CheckTile: function (R, C) {    //타일 R,C의  판정
+    CheckTile: function (R, C) {                        //타일의 이벤트 타입  판정
         var tile = this.tiles[R][C];
         switch (tile.type) {
             case cc.TileType.Build:
@@ -349,13 +349,7 @@ cc.Class({
                 return 0;
         }
     },
-    getSelected: function (ismytile) {
-        return ismytile ? cc.TileType.Damaged : cc.TileType.Selected;
-    },
-    getTiles: function (ismytile) {
-        return ismytile ? this.tiles : this.enermyTiles;
-    },
-    tileAttacked: function (R, C) {
+    tileAttacked: function (R, C) {                     //R,C 공격 판정 후 바뀐 타일들 반환
         switch (this.CheckTile(R, C)) {
             case cc.AttackEventType.None:
                 return this.emptyTileAttacked(R, C);
@@ -366,21 +360,24 @@ cc.Class({
             default: return [[], []];
         }
     },
-    destroyTile: function (R, C, tiles) {     //R,C 타일을 파괴한다.
+    getTiles: function (ismytile) {                     //내 타일 또는 적 타일들 반환
+        return ismytile ? this.tiles : this.enermyTiles;
+    },
+    destroyTile: function (R, C, tiles) {               //R,C 타일 파괴
         tiles[R][C].node.destroy();
         tiles[R][C] = null;
     },
-    changeTile: function (R, C, type, ismytile = true) {
+    changeTile: function (R, C, type, ismytile = true) {//기존 R,C 타일 파괴 후 type형 타일 새로 생성
         var tiles = this.getTiles(ismytile);
         this.destroyTile(R, C, tiles);
         tiles[R][C] = this.spawnTile(R, C, type, ismytile);
     },
-    emptyTileAttacked: function (R, C) {  //selectable to selected
+    emptyTileAttacked: function (R, C) {                //빈 타일 공격 판정 후 결과 반환
         console.log("attacked", R, C);
         this.changeTile(R, C, cc.TileType.Damaged);
         return [[cc.v2(C, R)], [cc.TileType.Selected]];
     },
-    bombExplosion: function (R, C) {
+    bombExplosion: function (R, C) {                    //폭탄 타일 공격 판정 후 결과 반환
         var ct = [[], []];
         this.changeTile(R, C, cc.TileType.Damaged);
         for (var v of cc.EDirec.getAllDirec())
@@ -391,7 +388,7 @@ cc.Class({
         ct[1].push(cc.TileType.Bomb);
         return ct;
     },
-    shipAttacked: function (R, C) { //selectable to enermy, 없는게 확실한 타일 selected,끝나고 완파여부 리턴
+    shipAttacked: function (R, C) {                     //배 타일 공격 판정 후 결과 반환
         var ct;
         var ship = this.tiles[R][C].ship;
         console.log("attacked ship", R, C);
@@ -408,7 +405,7 @@ cc.Class({
         ct[1].push(cc.TileType.Enermy);
         return ct;
     },
-    findBomb: function (ships, direcs) {
+    findBomb: function (ships, direcs) {                //ships 주변 direcs의 폭탄 위치 반환
         for (var v1 of ships) {
             for (var v2 of direcs) {
                 var R = v1.y + v2.y;
@@ -419,14 +416,14 @@ cc.Class({
         }
         return null;
     },
-    concatChangeTiles: function (ct1, ct2) {
+    concatChangeTiles: function (ct1, ct2) {            //바뀐 타일 결과 두개를 연결
         for (var c of ct2[0])
             ct1[0].push(c);
         for (var c of ct2[1])
             ct1[1].push(c);
         return ct1;
     },
-    sinkingShip: function (ship) {         //ship 주변 모든 타일 selected
+    sinkingShip: function (ship) {                      //배 타일 판정 결과 침몰이면 주변 모든 타일 확인
         var ships = ship.damaged;
         var direcs = cc.EDirec.getAllDirec();
         console.log("sinking ship", ship.R, ship.C);
@@ -437,42 +434,7 @@ cc.Class({
         this.concatChangeTiles(ct, this.attackDirec(ships, direcs));
         return ct;
     },
-    attackDirec: function (ships, direcs) {  // ships 근처 direcs를 모두 selected
-        var tiles = this.tiles;
-        var ct = [[], []];
-        for (var v1 of ships) {
-            for (var v2 of direcs) {
-                var R = v1.y + v2.y;
-                var C = v1.x + v2.x;
-                if (this.inRange(R, C) && tiles[R][C].isBuild())
-                    this.concatChangeTiles(ct, this.emptyTileAttacked(R, C));
-            }
-        }
-        return ct;
-    },
-    findConnection: function (R, C) {        //R,C 주위 ship들의 방향벡터 반환
-        var vecs = [];
-        for (var v of cc.EDirec.getAllDirec()) {
-            if (!this.inRange(R + v.y, C + v.x))
-                continue;
-            var tile = this.tiles[R + v.y][C + v.x];
-            if (tile.isEnermy() || tile.isDamagedShip())
-                vecs.push(v);
-        }
-        return vecs;
-    },
-    getConnections: function (R, C) {         //R,C와 연결된 ships[vector] 반환
-        var center = cc.v2(C, R);
-        var ships = [center];
-        var con = this.findConnection(R, C);
-        for (var c of con)
-            ships.push(center.add(c));
-        if (con.length == 1 &&
-            this.findConnection(ships[1].y, ships[1].x).length == 2)
-            ships.push(ships[1].add(con[0]));
-        return ships;
-    },
-    attackSide: function (R, C) {           //공격당한 ship 양옆을 selected
+    attackSide: function (R, C) {                       //배 타일이 판정 결과 두 칸 이상 공격받았으면 양 옆 타일 확인
         var ct = [[], []];
         var ships = this.getConnections(R, C);
         if (ships.length == 1)
@@ -490,6 +452,41 @@ cc.Class({
             ct = this.bombExplosion(bomb.y, bomb.x);
         this.concatChangeTiles(ct, this.attackDirec(ships, direcs));
         return ct;
+    },
+    attackDirec: function (ships, direcs) {             // ships 근처 direcs를 모두 확인
+        var tiles = this.tiles;
+        var ct = [[], []];
+        for (var v1 of ships) {
+            for (var v2 of direcs) {
+                var R = v1.y + v2.y;
+                var C = v1.x + v2.x;
+                if (this.inRange(R, C) && tiles[R][C].isBuild())
+                    this.concatChangeTiles(ct, this.emptyTileAttacked(R, C));
+            }
+        }
+        return ct;
+    },
+    findConnection: function (R, C) {                   //R,C 주위 ships의 방향벡터 반환
+        var vecs = [];
+        for (var v of cc.EDirec.getAllDirec()) {
+            if (!this.inRange(R + v.y, C + v.x))
+                continue;
+            var tile = this.tiles[R + v.y][C + v.x];
+            if (tile.isEnermy() || tile.isDamagedShip())
+                vecs.push(v);
+        }
+        return vecs;
+    },
+    getConnections: function (R, C) {                   //R,C와 연결된 ships[vector] 반환
+        var center = cc.v2(C, R);
+        var ships = [center];
+        var con = this.findConnection(R, C);
+        for (var c of con)
+            ships.push(center.add(c));
+        if (con.length == 1 &&
+            this.findConnection(ships[1].y, ships[1].x).length == 2)
+            ships.push(ships[1].add(con[0]));
+        return ships;
     },
     //EventHandler--------------------//
     onTouchStart: function (event) {
