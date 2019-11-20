@@ -250,9 +250,21 @@ cc.Class({
         //서버에 완료 알리기
     },
     assignItems: function () {
-        this.changeTile(8,18,cc.TileType.Bomb);
         console.log("폭탄 배치");
-        //빈 타일에 아이템 배치
+        var bombY;
+        var bombX;
+        while (true) {
+            bombY = Math.floor(Math.random() * this.height);
+            bombX = Math.floor(Math.random() * this.width);
+            bombX = bombX * 2 + bombY % 2;
+            if (!this.tiles[bombY][bombX].isShip())
+                break;
+        }
+
+
+        console.log("폭탄위치:" + bombY + "," + bombX);
+
+        this.changeTile(bombY, bombX, cc.TileType.Bomb);
     },
     changeBattlePhase: function () {   //battle phase로 전환
         if (!this.buildCompleted)
@@ -305,11 +317,11 @@ cc.Class({
         this.deselectTile();
     },
     sendAttack: function (R, C) {
-        var response= this.reciveAttack(R, C); 
-        return response; 
+        var response = this.reciveAttack(R, C);
+        return response;
     },
-    reciveAttack:function(R,C){
-        var response= this.DamageStep(R,C);
+    reciveAttack: function (R, C) {
+        var response = this.DamageStep(R, C);
         return response;
 
     },
@@ -322,8 +334,8 @@ cc.Class({
     DamageStep: function (R, C) {
         var attackData = {};
         attackData.changeTiles = this.tileAttacked(R, C);
-        attackData.lose=this.isLose();
-        attackData.detectShip=[0,0,0];
+        attackData.lose = this.isLose();
+        attackData.detectShip = [0, 0, 0];
         return attackData;
     },
     CheckTile: function (R, C) {    //타일 R,C의  판정
@@ -369,13 +381,13 @@ cc.Class({
         return [[cc.v2(C, R)], [cc.TileType.Selected]];
     },
     bombExplosion: function (R, C) {
-        var ct=[[],[]];
-        this.changeTile(R,C,cc.TileType.Damaged);
-        for(var v of cc.EDirec.getAllDirec())
-            if(this.inRange(R+v.y,C+v.x))
-                this.concatChangeTiles(ct,this.tileAttacked(R+v.y,C+v.x));
+        var ct = [[], []];
+        this.changeTile(R, C, cc.TileType.Damaged);
+        for (var v of cc.EDirec.getAllDirec())
+            if (this.inRange(R + v.y, C + v.x))
+                this.concatChangeTiles(ct, this.tileAttacked(R + v.y, C + v.x));
         console.log("explosion", R, C);
-        ct[0].push(cc.v2(C,R));
+        ct[0].push(cc.v2(C, R));
         ct[1].push(cc.TileType.Bomb);
         return ct;
     },
