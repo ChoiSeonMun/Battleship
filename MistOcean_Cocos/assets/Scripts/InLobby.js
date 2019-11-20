@@ -17,7 +17,7 @@ cc.Class({
     },
 
     onLoad () {
-        // 패널
+        // Panel
         this.panelState = false;
         this.isHost = false;
         this.isJoin = false;
@@ -28,7 +28,7 @@ cc.Class({
         this.inputLabel = this.panel.node.getChildByName("Input Label").getComponent(cc.Label);
         this.panel.node.getChildByName("Close Button").on("click", this.closePanel, this);
 
-        // 메인 버튼
+        // Main
         this.hostButton.node.on("click", this.setHost, this);
         this.joinButton.node.on("click", this.setJoin, this);
     },
