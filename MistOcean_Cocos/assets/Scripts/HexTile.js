@@ -35,6 +35,12 @@ cc.Class({
     isEnermy:function(){
         return this.type==cc.TileType.Enermy;
     },
+    isBomb:function(){
+        return this.type==cc.TileType.Bomb;
+    },
+    isBuild:function(){
+        return this.type==cc.TileType.Build;
+    },
     onTouchStart:function(event){
     },
 
