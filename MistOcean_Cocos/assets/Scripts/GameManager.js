@@ -9,6 +9,15 @@ cc.Class({
             default: [],
             type: [cc.Integer]
         },
+        enermyCount: {
+            get() {
+                return this._enermyCount;
+            },
+            set(value) {
+                this._enermyCount = value;
+                this.battlePanel.getComponent("BattlePanel").setShipCount(value);
+            }
+        },
         tileContainer: {
             default: [],
             type: [cc.Node],
@@ -37,6 +46,23 @@ cc.Class({
             default: null,
             type: cc.Node
         },
+        isMyTurn: {
+            get: function () {
+                return this._isMyTurn;
+            },
+            set: function (value) {
+                this._isMyTurn = value;
+                this.battlePanel.getComponent("BattlePanel").setTurn(value);
+            }
+        },
+        winPanel:{
+            default:null,
+            type:cc.Node
+        },
+        winText:{
+            default:null,
+            type:cc.Label
+        }
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -47,14 +73,14 @@ cc.Class({
         this.setShipPrefabs();
         this.spawnBuildTiles();
     },
-    enableBuildEvents: function () {                    
+    enableBuildEvents: function () {
         var target = this.tileContainer[cc.ScreenType.Build - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
         target.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
         target.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, target);
     },
-    disableBuildEvents: function () {                   
+    disableBuildEvents: function () {
         var target = this.tileContainer[cc.ScreenType.Build - 1];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.off(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
@@ -65,11 +91,15 @@ cc.Class({
         var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
+    disableBattleEvents :function () {
+        var target = this.tileContainer[cc.ScreenType.Battle - 1];
+        target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
+    },
     declareVariable: function () {                      //내부변수 선언
         var tile = this.hexTilePrefabs[0].data;
         this.tiles = [];                            //type:[HexTile], default:Build 내 타일정보들이 저장
         this.enermyTiles = [];                      //type:[HexTile], default:Selectable 상대 타일 정보들이 저장
-        this.ships = [];                            //type:[Ship], 내 배 정보들이 저장
+        this.ships = [];                            //type:[Ship],  내 배 정보들이 저장
         this.shipPrefabs = [];                      //type:[cc.Node], index:ShipType -2, ship 원형들이 저장
         this.ShipPreviewPrefabs = [];               //type:[cc.Node], index:ShipType -2, ship preview 원형들이 저장
         this.shipPreview = null;                    //type:cc.Node, 현재 화면에 표시된 ship preview가 저장
@@ -205,9 +235,6 @@ cc.Class({
         this.shipCount[typeindex] -= built ? 1 : -1;
         this.buildPanel.getComponent("BuildPanel").setShipCount(typeindex, this.shipCount[typeindex]);
     },
-    detectShip: function (typeindex) {                  //배를 모두 찾았을 경우 갯수 감소
-        this.battlePanel.getComponent("BattlePanel").setShipCount(typeindex, --this.enermyCount[typeindex]);
-    },
     isValidShip: function (R, C, type, direc) {         //배의 유효성 검사
         var step = cc.EDirec.getVector(direc);
         for (var i = 0; i < type; ++i) {
@@ -242,6 +269,10 @@ cc.Class({
             console.log("배치가 끝나지 않음");
             return;
         }
+        if(this.buildCompleted){
+            console.log("이미 배치가 완료됨");
+            return;
+        }
         this.deselectTile();
         this.assignItems();
         this.disableBuildEvents();
@@ -270,6 +301,7 @@ cc.Class({
         if (!this.buildCompleted)
             return;
         console.log("전투 시작");
+        this.isMyTurn = true;             //방장이 먼저 턴을 갖게//
         this.buildPanel.setPosition(cc.v2(-884, 0));
         this.battlePanel.setPosition(cc.v2(0, 0));
         this.changeContainer();
@@ -330,12 +362,20 @@ cc.Class({
         console.log('update enermy info');
         for (var i = 0; i < ct[0].length; ++i)
             this.changeTile(ct[0][i].y, ct[0][i].x, ct[1][i], false);
+        this.enermyCount = attackData.shipCnt;
+        console.log(this.enermyCount , attackData.shipCnt);
+        this.isMyTurn = attackData.continueTurn;
+        if(attackData.win)
+            this.gameEnd(true);
     },
     DamageStep: function (R, C) {                       //공격 받은 후 판정 결과 전달
         var attackData = {};
         attackData.changeTiles = this.tileAttacked(R, C);
-        attackData.lose = this.isLose();
-        attackData.detectShip = [0, 0, 0];
+        attackData.continueTurn = this.tiles[R][C].isShip();
+        attackData.win = this.isLose();
+        attackData.shipCnt = this.shipCount;
+        //if(attackData.win)
+        //    this.gameEnd(false);
         return attackData;
     },
     CheckTile: function (R, C) {                        //타일의 이벤트 타입  판정
@@ -432,6 +472,7 @@ cc.Class({
         if (bomb != null)
             ct = this.bombExplosion(bomb.y, bomb.x);
         this.concatChangeTiles(ct, this.attackDirec(ships, direcs));
+        --this.shipCount[ship.type-2];
         return ct;
     },
     attackSide: function (R, C) {                       //배 타일이 판정 결과 두 칸 이상 공격받았으면 양 옆 타일 확인
@@ -487,6 +528,11 @@ cc.Class({
             this.findConnection(ships[1].y, ships[1].x).length == 2)
             ships.push(ships[1].add(con[0]));
         return ships;
+    },
+    gameEnd(win){
+        this.winText.string= win?"WIN":"LOSE";
+        this.winPanel.active=true;
+        this.disableBattleEvents();
     },
     //EventHandler--------------------//
     onTouchStart: function (event) {

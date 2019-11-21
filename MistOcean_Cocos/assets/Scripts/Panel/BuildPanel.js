@@ -8,11 +8,11 @@ cc.Class({
         },
         ShipCountLabel: {
             default: [],
-            type: [cc.Node],
+            type: [cc.Label],
         }
     },
     setShipCount:function(index,cnt){
-        this.ShipCountLabel[index].getComponent(cc.Label).string=cnt;
+        this.ShipCountLabel[index].string=cnt;
     },
     onSettingButtonClick: function (event, customEventData) {
         this.GameManager.getComponent("GameManager").shipType = customEventData;
