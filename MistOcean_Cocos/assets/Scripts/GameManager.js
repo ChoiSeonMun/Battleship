@@ -9,12 +9,12 @@ cc.Class({
             default: [],
             type: [cc.Integer]
         },
-        enermyCount: {
+        enemyCount: {
             get() {
-                return this._enermyCount;
+                return this._enemyCount;
             },
             set(value) {
-                this._enermyCount = value;
+                this._enemyCount = value;
                 this.battlePanel.getComponent("BattlePanel").setShipCount(value);
             }
         },
@@ -34,7 +34,7 @@ cc.Class({
             default: null,
             type: cc.Prefab,
         },
-        TileHilightPrefab: {
+        TileHighlightPrefab: {
             default: null,
             type: cc.Prefab,
         },
@@ -55,13 +55,13 @@ cc.Class({
                 this.battlePanel.getComponent("BattlePanel").setTurn(value);
             }
         },
-        winPanel:{
-            default:null,
-            type:cc.Node
+        winPanel: {
+            default: null,
+            type: cc.Node
         },
-        winText:{
-            default:null,
-            type:cc.Label
+        winText: {
+            default: null,
+            type: cc.Label
         }
     },
 
@@ -91,21 +91,21 @@ cc.Class({
         var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
-    disableBattleEvents :function () {
+    disableBattleEvents: function () {
         var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
     declareVariable: function () {                      //내부변수 선언
         var tile = this.hexTilePrefabs[0].data;
         this.tiles = [];                            //type:[HexTile], default:Build 내 타일정보들이 저장
-        this.enermyTiles = [];                      //type:[HexTile], default:Selectable 상대 타일 정보들이 저장
+        this.enemyTiles = [];                      //type:[HexTile], default:Selectable 상대 타일 정보들이 저장
         this.ships = [];                            //type:[Ship],  내 배 정보들이 저장
         this.shipPrefabs = [];                      //type:[cc.Node], index:ShipType -2, ship 원형들이 저장
         this.ShipPreviewPrefabs = [];               //type:[cc.Node], index:ShipType -2, ship preview 원형들이 저장
         this.shipPreview = null;                    //type:cc.Node, 현재 화면에 표시된 ship preview가 저장
         this.target = null;                         //type:HexTile, 현재 선택된 타일이 저장
-        this.hilight = null;                        //type:cc.Node, 현재 화면에 표시된 hilight가 저장
-        this.enermyCount = [2, 2, 1];               //type:[Num],   남은 enermy 숫자를 저장
+        this.highlight = null;                        //type:cc.Node, 현재 화면에 표시된 highlight가 저장
+        this.enemyCount = [2, 2, 1];               //type:[Num],   남은 enemy 숫자를 저장
         this.shipType = cc.ShipType.Small;          //type:cc.ShipType, 선택된 배의 종류가 저장
         this.cursorDirec = cc.EDirec.default;       //type:cc.EDirec, 선택된 타일과 커서의 방향을 저장
         this.currentScreen = cc.ScreenType.Build;   //type:cc.ScreenType, 현재 표시하고있는 화면의 종류를 저장
@@ -165,24 +165,24 @@ cc.Class({
         var angle = Math.atan2(forward.y - origin.y, forward.x - origin.x) * 180 / Math.PI;
         return cc.EDirec.getDirec(angle);
     },
-    selectTile: function (hex) {                        //target을 지정하고 hilight와 preview 생성
+    selectTile: function (hex) {                        //target을 지정하고 highlight와 preview 생성
         this.target = hex;
-        this.showTileHilight(hex.R, hex.C);
+        this.showTileHighlight(hex.R, hex.C);
         if (this.currentScreen == cc.ScreenType.Build)
             this.showShipPreview();
     },
-    showTileHilight: function (R, C) {                  //현재 화면 R,C위치에 hilight 생성
-        if (this.hilight == null) {
-            this.hilight = cc.instantiate(this.TileHilightPrefab);
-            this.hilight.zIndex = cc.ZOrder.Hilight;
-            this.tileContainer[this.currentScreen - 1].addChild(this.hilight);
+    showTileHighlight: function (R, C) {                  //현재 화면 R,C위치에 highlight 생성
+        if (this.highlight == null) {
+            this.highlight = cc.instantiate(this.TileHighlightPrefab);
+            this.highlight.zIndex = cc.ZOrder.Highlight;
+            this.tileContainer[this.currentScreen - 1].addChild(this.highlight);
         }
-        this.hilight.setPosition(this.getTilePos(R, C));
+        this.highlight.setPosition(this.getTilePos(R, C));
     },
     deselectTile: function () {                         //target 해제
-        if (this.hilight != null)
-            this.hilight.destroy();
-        this.hilight = null;
+        if (this.highlight != null)
+            this.highlight.destroy();
+        this.highlight = null;
         this.target = null;
     },
     showShipPreview: function () {                      //ship preview 표시
@@ -269,7 +269,7 @@ cc.Class({
             console.log("배치가 끝나지 않음");
             return;
         }
-        if(this.buildCompleted){
+        if (this.buildCompleted) {
             console.log("이미 배치가 완료됨");
             return;
         }
@@ -291,7 +291,6 @@ cc.Class({
             if (!this.tiles[bombY][bombX].isShip())
                 break;
         }
-
 
         console.log("폭탄위치:" + bombY + "," + bombX);
 
@@ -330,9 +329,9 @@ cc.Class({
     },
     spawnEnermyTiles: function () {                     //battle screen에 selectable tile 생성
         for (var r = 0; r < this.height; ++r) {
-            this.enermyTiles[r] = [];
+            this.enemyTiles[r] = [];
             for (var c = 0; c < this.width; ++c)
-                this.enermyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Selectable, false);
+                this.enemyTiles[r][c * 2 + r % 2] = this.spawnTile(r, c * 2 + r % 2, cc.TileType.Selectable, false);
         }
     },
     attackTarget: function () {                         //공격 진행
@@ -349,23 +348,23 @@ cc.Class({
         this.deselectTile();
     },
     sendAttack: function (R, C) {                       //공격 위치 송신
-        var response = this.reciveAttack(R, C);
+        var response = this.receiveAttack(R, C);
         return response;
     },
-    reciveAttack: function (R, C) {                     //공격 위치 수신
+    receiveAttack: function (R, C) {                     //공격 위치 수신
         var response = this.DamageStep(R, C);
         return response;
 
     },
     updateEnemyTile: function (attackData) {            //공격의 판정 결과에 따라 적 타일 갱신
         var ct = attackData.changeTiles;
-        console.log('update enermy info');
+        console.log('update enemy info');
         for (var i = 0; i < ct[0].length; ++i)
             this.changeTile(ct[0][i].y, ct[0][i].x, ct[1][i], false);
-        this.enermyCount = attackData.shipCnt;
-        console.log(this.enermyCount , attackData.shipCnt);
+        this.enemyCount = attackData.shipCnt;
+        console.log(this.enemyCount, attackData.shipCnt);
         this.isMyTurn = attackData.continueTurn;
-        if(attackData.win)
+        if (attackData.win)
             this.gameEnd(true);
     },
     DamageStep: function (R, C) {                       //공격 받은 후 판정 결과 전달
@@ -401,7 +400,7 @@ cc.Class({
         }
     },
     getTiles: function (ismytile) {                     //내 타일 또는 적 타일들 반환
-        return ismytile ? this.tiles : this.enermyTiles;
+        return ismytile ? this.tiles : this.enemyTiles;
     },
     destroyTile: function (R, C, tiles) {               //R,C 타일 파괴
         tiles[R][C].node.destroy();
@@ -472,7 +471,7 @@ cc.Class({
         if (bomb != null)
             ct = this.bombExplosion(bomb.y, bomb.x);
         this.concatChangeTiles(ct, this.attackDirec(ships, direcs));
-        --this.shipCount[ship.type-2];
+        --this.shipCount[ship.type - 2];
         return ct;
     },
     attackSide: function (R, C) {                       //배 타일이 판정 결과 두 칸 이상 공격받았으면 양 옆 타일 확인
@@ -529,12 +528,13 @@ cc.Class({
             ships.push(ships[1].add(con[0]));
         return ships;
     },
-    gameEnd(win){
-        this.winText.string= win?"WIN":"LOSE";
-        this.winPanel.active=true;
+    gameEnd(win) {
+        this.winText.string = win ? "YOU WIN!" : "YOU LOSE!";
+        this.winPanel.active = true;
         this.disableBattleEvents();
     },
-    //EventHandler--------------------//
+
+    // EventHandler - - - - - - - - - - - - - - - - - - - - //
     onTouchStart: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex != null)
@@ -559,7 +559,8 @@ cc.Class({
             return;
         hex.manager.coverShipPreview();
     },
-    //--------------------------------//
+    // End of EventHandler - - - - - - - - - - - - - - - - - - - - //
+
     update(dt) {
     },
 });
