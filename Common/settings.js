@@ -1,2 +1,5 @@
-const SERVER_PORT = 12345;
-const SERVER_IP = '172.19.84.25';
+const settings = {
+    PORT: 12345,
+    IP: '127.0.0.1'
+};
+module.exports.settings=settings;

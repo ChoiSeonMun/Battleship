@@ -1,13 +1,13 @@
-import SERVER_PORT from "../Common/settings.js";
-import protocol from "../Common/protocol.js";
+const settings = require("../Common/settings").settings;
+const protocol = require("../Common/protocol").protocol;
 
 var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var sessions = {};
 
-http.listen(SERVER_PORT, () => {
-  console.log(`listening on *: ${ SERVER_PORT }`);
+http.listen(settings.PORT, () => {
+  console.log(`listening on *: ${ settings.PORT }`);
 });
 
 io.on('connection', (socket) =>{

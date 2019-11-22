@@ -4,5 +4,6 @@ class Player {
         this.name = sock.nickname;
         this.isReady = false;
         this.socket = sock;
+        this.oppo = undefined;
     }
 }
