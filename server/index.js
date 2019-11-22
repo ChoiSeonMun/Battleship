@@ -25,13 +25,13 @@ io.on('connection', (socket) =>{
         var player = new Player(socket, data.UserName);
         
         // 세션의 유무를 체크한다.
-        if (sessions[player.nickname] !== undefined) {
+        if (sessions[player.name] !== undefined) {
             socket.emit('host_response', protocol.host_response(false));
             console.log(`${player.name} host failed`);
             return;
         }
 
-        sessions[player.nickname] = new Session(player);
+        sessions[player.name] = new Session(player);
         socket.emit('host_response', protocol.host_response(true));
         console.log(`${player.name} host successed`);
     });
