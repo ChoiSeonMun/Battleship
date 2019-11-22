@@ -55,6 +55,11 @@ class Session {
                 
                 // 모두 준비되면 호스트에게 턴을 넘긴다.
                 if (isAllReady) {
+                    for (var player of this.players) {
+                        player.socket.emit('place_end', protocol.place_end());
+                    }
+                    console.log('Place End');
+                    
                     this.host.socket.emit('turn_start', protocol.turn_start());
                     console.log(`${this.host.name}'s turn start`);
                 }
