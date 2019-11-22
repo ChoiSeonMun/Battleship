@@ -13,7 +13,11 @@ cc.Class({
         ModeLabel: {
             default: null,
             type: cc.Label
-        }
+        },
+        WaitingPanel: {
+            default: null,
+            type: cc.Node
+        },
     },
     setShipCount: function (index, cnt) {
         this.ShipCountLabel[index].string = cnt;
@@ -29,6 +33,7 @@ cc.Class({
             manager.deleteTargetShip();
     },
     onStartButtonClick: function () {
+        this.ModeLabel.string = "";
         this.GameManager.getComponent("GameManager").buildComplete();
         this.GameManager.getComponent("GameManager").changeBattlePhase();
     },
