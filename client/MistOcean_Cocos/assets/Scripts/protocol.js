@@ -1,4 +1,4 @@
-const protocol = {
+cc.protocol = {
     host_request: function(userName) {
         return JSON.stringify({ UserName: userName });
     },
@@ -62,4 +62,3 @@ const protocol = {
     }
 
 }
-module.exports.protocol=protocol;
