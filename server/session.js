@@ -1,6 +1,8 @@
-import protocol from "../Common/protocol.js";
+import Player from 'player';
 
-class Session {
+const protocol = require('../Common/protocol.js').protocol;
+
+export class Session {
     constructor(player) {
         // 플레이어의 id로 room을 만들어 join 시킨다.
         player.socket.join(player.id, () => {
@@ -17,9 +19,9 @@ class Session {
     }
 
     // 적군을 추가한다.
-    join(opponent) {
+    join(player) {
         // 적군을 조인시킨다.
-        opponent.join(room, () => {
+        player.sock.join(room, () => {
             let rooms = Object.keys(opponent.rooms);
             console.log(`${ opponent.id } is in ${ rooms }`);
         });
@@ -34,7 +36,7 @@ class Session {
     start() {
         for (player in this.players) {
             // 게임 시작을 보낸다.
-            player.sock.send('game_start', protocol.game_start());
+            player.sock.emit('game_start', protocol.game_start());
             
             // 배치
             player.sock.on('place_done', (msg) => {
