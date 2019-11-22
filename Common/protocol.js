@@ -62,3 +62,4 @@ const protocol = {
     }
 
 }
+module.exports.protocol=protocol;

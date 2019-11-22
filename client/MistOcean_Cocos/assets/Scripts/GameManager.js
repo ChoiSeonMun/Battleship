@@ -535,7 +535,6 @@ cc.Class({
         this.winPanel.active = true;
         this.disableBattleEvents();
     },
-
     // EventHandler - - - - - - - - - - - - - - - - - - - - //
     onTouchStart: function (event) {
         var hex = event.target.getComponent("HexTile");
