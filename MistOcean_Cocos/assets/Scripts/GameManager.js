@@ -55,13 +55,13 @@ cc.Class({
                 this.battlePanel.getComponent("BattlePanel").setTurn(value);
             }
         },
-        winPanel:{
-            default:null,
-            type:cc.Node
+        winPanel: {
+            default: null,
+            type: cc.Node
         },
-        winText:{
-            default:null,
-            type:cc.Label
+        winText: {
+            default: null,
+            type: cc.Label
         }
     },
 
@@ -91,7 +91,7 @@ cc.Class({
         var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
-    disableBattleEvents :function () {
+    disableBattleEvents: function () {
         var target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
@@ -269,7 +269,7 @@ cc.Class({
             console.log("배치가 끝나지 않음");
             return;
         }
-        if(this.buildCompleted){
+        if (this.buildCompleted) {
             console.log("이미 배치가 완료됨");
             return;
         }
@@ -291,7 +291,6 @@ cc.Class({
             if (!this.tiles[bombY][bombX].isShip())
                 break;
         }
-
 
         console.log("폭탄위치:" + bombY + "," + bombX);
 
@@ -363,9 +362,9 @@ cc.Class({
         for (var i = 0; i < ct[0].length; ++i)
             this.changeTile(ct[0][i].y, ct[0][i].x, ct[1][i], false);
         this.enermyCount = attackData.shipCnt;
-        console.log(this.enermyCount , attackData.shipCnt);
+        console.log(this.enermyCount, attackData.shipCnt);
         this.isMyTurn = attackData.continueTurn;
-        if(attackData.win)
+        if (attackData.win)
             this.gameEnd(true);
     },
     DamageStep: function (R, C) {                       //공격 받은 후 판정 결과 전달
@@ -472,7 +471,7 @@ cc.Class({
         if (bomb != null)
             ct = this.bombExplosion(bomb.y, bomb.x);
         this.concatChangeTiles(ct, this.attackDirec(ships, direcs));
-        --this.shipCount[ship.type-2];
+        --this.shipCount[ship.type - 2];
         return ct;
     },
     attackSide: function (R, C) {                       //배 타일이 판정 결과 두 칸 이상 공격받았으면 양 옆 타일 확인
@@ -529,12 +528,13 @@ cc.Class({
             ships.push(ships[1].add(con[0]));
         return ships;
     },
-    gameEnd(win){
-        this.winText.string= win?"WIN":"LOSE";
-        this.winPanel.active=true;
+    gameEnd(win) {
+        this.winText.string = win ? "YOU WIN!" : "YOU LOSE!";
+        this.winPanel.active = true;
         this.disableBattleEvents();
     },
-    //EventHandler--------------------//
+
+    // EventHandler - - - - - - - - - - - - - - - - - - - - //
     onTouchStart: function (event) {
         var hex = event.target.getComponent("HexTile");
         if (hex != null)
@@ -559,7 +559,8 @@ cc.Class({
             return;
         hex.manager.coverShipPreview();
     },
-    //--------------------------------//
+    // End of EventHandler - - - - - - - - - - - - - - - - - - - - //
+
     update(dt) {
     },
 });
