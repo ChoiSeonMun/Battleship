@@ -1,0 +1,46 @@
+{
+  "assets-sort-type": "name",
+  "collision-matrix": [
+    [
+      true
+    ],
+    [
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false
+    ]
+  ],
+  "design-resolution-height": 1444,
+  "design-resolution-width": 884,
+  "excluded-modules": [],
+  "facebook": {
+    "appID": "",
+    "audience": {
+      "enable": false
+    },
+    "enable": false,
+    "live": {
+      "enable": false
+    }
+  },
+  "fit-height": true,
+  "fit-width": true,
+  "group-list": [
+    "default",
+    "Tile",
+    "Ship"
+  ],
+  "last-module-event-record-time": 1573992690956,
+  "simulator-orientation": false,
+  "simulator-resolution": {
+    "height": 1444,
+    "width": 884
+  },
+  "start-scene": "70bea517-f238-4826-8ffd-39f0fa53158b",
+  "use-customize-simulator": true,
+  "use-project-simulator-setting": true
+}
