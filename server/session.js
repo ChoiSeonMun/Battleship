@@ -1,5 +1,3 @@
-import Player from 'player';
-
 const protocol = require('../Common/protocol.js').protocol;
 
 export class Session {

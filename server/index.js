@@ -1,6 +1,3 @@
-import Session from 'session';
-import Player from 'player';
-
 const settings = require("../Common/settings").settings;
 const protocol = require("../Common/protocol").protocol;
 
