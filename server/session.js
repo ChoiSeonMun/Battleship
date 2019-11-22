@@ -9,7 +9,7 @@ class Session {
         this.isOver = false;
 
         // 플레이어를 조인시킨다.
-        player.join(this.roomID);
+        player.join(this.ID);
     }
 
     join(player) {

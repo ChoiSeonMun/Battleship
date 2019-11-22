@@ -1,11 +1,13 @@
 class Player {
-    constructor(sock) {
+    constructor(sock, name) {
         this.ID = sock.id;
         this.name = name;
         this.isReady = false;
         this.socket = sock;
         this.oppo = undefined;
         this.session = undefined;
+
+        sock.player = this;
     }
 
     on(event, callback) {
@@ -16,10 +18,10 @@ class Player {
         this.socket.emit(event, msg);
     }
 
-    join(session) {
-        this.socket.join(session.ID, () => {
-            this.session = session.ID;
-            console.log(`${ player.ID } is in ${ session.ID }`);
+    join(sessonID) {
+        this.socket.join(sessionID, () => {
+            this.session = sessionID;
+            console.log(`${ player.sessionID } is in ${ sessionID }`);
         });
     }
 
