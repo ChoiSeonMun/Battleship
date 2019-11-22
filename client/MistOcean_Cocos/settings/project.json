@@ -27,7 +27,7 @@
       "enable": false
     }
   },
-  "fit-height": true,
+  "fit-height": false,
   "fit-width": true,
   "group-list": [
     "default",

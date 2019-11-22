@@ -34,7 +34,7 @@ cc.Class({
             default: null,
             type: cc.Prefab,
         },
-        TileHighlightPrefab: {
+        TileHighlighyPrefab: {
             default: null,
             type: cc.Prefab,
         },
@@ -167,14 +167,14 @@ cc.Class({
     },
     selectTile: function (hex) {                        //target을 지정하고 highlight와 preview 생성
         this.target = hex;
-        this.showTileHighlight(hex.R, hex.C);
+        this.showTileHighlighy(hex.R, hex.C);
         if (this.currentScreen == cc.ScreenType.Build)
             this.showShipPreview();
     },
-    showTileHighlight: function (R, C) {                  //현재 화면 R,C위치에 highlight 생성
+    showTileHighlighy: function (R, C) {                  //현재 화면 R,C위치에 highlight 생성
         if (this.highlight == null) {
-            this.highlight = cc.instantiate(this.TileHighlightPrefab);
-            this.highlight.zIndex = cc.ZOrder.Highlight;
+            this.highlight = cc.instantiate(this.TileHighlighyPrefab);
+            this.highlight.zIndex = cc.ZOrder.Highlighy;
             this.tileContainer[this.currentScreen - 1].addChild(this.highlight);
         }
         this.highlight.setPosition(this.getTilePos(R, C));

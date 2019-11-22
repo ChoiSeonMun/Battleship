@@ -22,7 +22,6 @@ cc.Class({
         this.panelState = false;
         this.isHost = false;
         this.isJoin = false;
-        this.panelName = this.panel.node.getChildByName("PanelName Label").getComponent(cc.Label);
         this.editBox = this.panel.node.getChildByName("Input EditBox").getComponent(cc.EditBox);
         this.okButton = this.panel.node.getChildByName("Ok Button").getComponent(cc.Button);
         this.okButton.node.on("click", this.okClick, this);
@@ -35,13 +34,11 @@ cc.Class({
     },
 
     setHost: function () {
-        this.panelName.string = "Host";
         this.isHost ^= true;
         this.isJoin = false;
         this.setPanel();
     },
     setJoin: function () {
-        this.panelName.string = "Join";
         this.isJoin ^= true;
         this.isHost = false;
         this.setPanel();
