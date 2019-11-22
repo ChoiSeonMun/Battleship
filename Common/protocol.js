@@ -59,6 +59,10 @@ const protocol = {
 
     place_done: function() {
         return "";
+    },
+
+    place_end: function() {
+        return "";
     }
 
 }
