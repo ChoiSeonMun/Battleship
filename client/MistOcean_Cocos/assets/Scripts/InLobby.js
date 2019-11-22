@@ -39,7 +39,10 @@ cc.Class({
         this.joinInputLabel = this.joinPanel.node.getChildByName("Client").getChildByName("Name Label").getComponent(cc.Label);
         this.hostPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
         this.joinPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
-
+        //socket event
+        cc.Socket.on('host_response',this.host_response_handler);
+        cc.Socket.on("game_start", cc.protocol.join_response);
+        cc.Socket.on("game_start", cc.protocol.join_response);
         // Main
         this.hostButton.node.on("click", this.setHost, this);
         this.joinButton.node.on("click", this.setJoin, this);
@@ -103,16 +106,15 @@ cc.Class({
     },
     host_response_handler (Res_data)
     {
+        console.log('host_response');
         if(Res_data.Result)
         {
-            cc.Socket.on("game_start", cc.protocol.host_response);
         }
     },
     join_response_handler (Res_data)
     {
         if(Res_data.Result)
         {
-            cc.Socket.on("game_start", cc.protocol.join_response);
         }
     },
     game_start_handler()
