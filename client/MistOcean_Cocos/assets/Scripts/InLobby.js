@@ -1,6 +1,6 @@
-var socketio=require('socket.io-client');
-var url='http://127.0.0.1:12345';
-cc.Socket=socketio.connect(url);
+var socketio = require('socket.io-client');
+var url = 'http://127.0.0.1:12345';
+cc.Socket = socketio.connect(url);
 cc.Class({
     extends: cc.Component,
 
@@ -23,7 +23,7 @@ cc.Class({
         },
     },
 
-    onLoad () {
+    onLoad() {
         // Panel
         this.panelState = false;
         this.isHost = false;
@@ -35,14 +35,19 @@ cc.Class({
         this.hostOkButton.node.on("click", this.okClick, this);
         this.joinOkButton = this.joinPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
         this.joinOkButton.node.on("click", this.okClick, this);
-        this.hostInputLabel = this.hostPanel.node.getChildByName("Host").getChildByName("Name Label").getComponent(cc.Label);
-        this.joinInputLabel = this.joinPanel.node.getChildByName("Client").getChildByName("Name Label").getComponent(cc.Label);
+        this.hostErrorLabel = this.hostPanel.node.getChildByName("Error Label").getComponent(cc.Label);
+        this.joinErrorLabel = this.joinPanel.node.getChildByName("Error Label").getComponent(cc.Label);
         this.hostPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
         this.joinPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
 
         // Main
         this.hostButton.node.on("click", this.setHost, this);
         this.joinButton.node.on("click", this.setJoin, this);
+
+        this.hostPanel.node.active = false;
+        this.joinPanel.node.active = false;
+        this.hostErrorLabel.string = "";
+        this.joinErrorLabel.string = "";
     },
 
     setHost: function () {
@@ -55,7 +60,7 @@ cc.Class({
         this.isHost = false;
         this.setPanel();
     },
-    setPanel: function(){
+    setPanel: function () {
         if (this.isHost || this.isJoin) this.onPanel();
         else this.offPanel();
     },
@@ -77,49 +82,43 @@ cc.Class({
         this.hostPanel.node.active = false;
         this.joinPanel.node.active = false;
     },
-    okClick: function() {
-        if(this.isHost)
-        {
-            if (this.hostEditBox.string != "") {
-            var text = "Input : " + this.hostEditBox.string;
-            this.hostInputLabel.string = text;
-            cc.Socket.emit("host_request", cc.protocol.host_request(this.hostEditBox.string));
+    okClick: function () {
+        if (this.isHost) {
+            if (this.hostEditBox.string == "") {
+                this.hostErrorLabel.string = "이름을 입력하세요!";
+            }
+            else {
+                this.hostErrorLabel.string = "";
+                cc.Socket.emit("host_request", cc.protocol.host_request(this.hostEditBox.string));
             }
         }
-        else if(this.isJoin)
-        {
-            if(this.joinClientEditBox != "" && this.joinHostEditBox != "")
-            {
-                // this.hostInputLabel.string = text;    
-                // this.joinInputLabel.string = text;
+        else if (this.isJoin) {
+            if (this.joinHostEditBox.string == "") {
+                this.joinErrorLabel.string = "상대 이름을 입력하세요!"
+            }
+            else if (this.joinClientEditBox.string == "") {
+                this.joinErrorLabel.string = "이름을 입력하세요!"
+            }
+            else {
+                this.joinErrorLabel.string = "";
                 cc.Socket.emit("join_request", cc.protocol.join_request(this.joinClientEditBox.string, this.joinHostEditBox.string));
             }
         }
-        
-        else {
-            if (this.isHost) this.hostInputLabel.string = "";
-            else if (this.isJoin) this.joinInputLabel.string = "";
-        }
     },
-    host_response_handler (Res_data)
-    {
-        if(Res_data.Result)
-        {
+    host_response_handler(Res_data) {
+        if (Res_data.Result) {
             cc.Socket.on("game_start", cc.protocol.host_response);
         }
     },
-    join_response_handler (Res_data)
-    {
-        if(Res_data.Result)
-        {
+    join_response_handler(Res_data) {
+        if (Res_data.Result) {
             cc.Socket.on("game_start", cc.protocol.join_response);
         }
     },
-    game_start_handler()
-    {
+    game_start_handler() {
         cc.director.loadScene("attacktest");
     },
-    closePanel: function(){
+    closePanel: function () {
         this.isHost = false;
         this.isJoin = false;
         this.offPanel();
