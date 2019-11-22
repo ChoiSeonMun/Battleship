@@ -27,7 +27,8 @@ cc.Class({
         this.isHost = false;
         this.isJoin = false;
         this.hostEditBox = this.hostPanel.node.getChildByName("Host").getChildByName("Input EditBox").getComponent(cc.EditBox);
-        this.joinEditBox = this.joinPanel.node.getChildByName("Client").getChildByName("Input EditBox").getComponent(cc.EditBox);
+        this.joinClientEditBox = this.joinPanel.node.getChildByName("Client").getChildByName("Input EditBox").getComponent(cc.EditBox);
+        this.joinHostEditBox = this.joinPanel.node.getChildByName("Host").getChildByName("Input EditBox").getComponent(cc.EditBox);
         this.hostOkButton = this.hostPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
         this.hostOkButton.node.on("click", this.okClick, this);
         this.joinOkButton = this.joinPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
@@ -75,15 +76,46 @@ cc.Class({
         this.joinPanel.node.active = false;
     },
     okClick: function() {
-        if (this.editBox.string != "") {
-            var text = "Input : " + this.editBox.string;
-            if (this.isHost) this.hostInputLabel.string = text;
-            else if (this.isJoin) this.joinInputLabel.string = text;
+        if(this.isHost)
+        {
+            if (this.hostEditBox.string != "") {
+            var text = "Input : " + this.hostEditBox.string;
+            this.hostInputLabel.string = text;
+            socketio.Socket.emit("host_request", protocol.host_request(this.hostEditBox.string));
+            }
         }
+        else if(this.isJoin)
+        {
+            if(this.joinClientEditBox != "" && this.joinHostEditBox != "")
+            {
+                // this.hostInputLabel.string = text;    
+                // this.joinInputLabel.string = text;
+                socketio.Socket.emit("join_request", protocol.join_request(this.joinClientEditBox.string, this.joinHostEditBox.string));
+            }
+        }
+        
         else {
             if (this.isHost) this.hostInputLabel.string = "";
             else if (this.isJoin) this.joinInputLabel.string = "";
         }
+    },
+    host_response_handler (Res_data)
+    {
+        if(Res_data.Result)
+        {
+            socketio.Socket.on("game_start", protocol.host_response);
+        }
+    },
+    join_response_handler (Res_data)
+    {
+        if(Res_data.Result)
+        {
+            socketio.Socket.on("game_start", protocol.join_response);
+        }
+    },
+    game_start_handler()
+    {
+        cc.director.loadScene("attacktest");
     },
     closePanel: function(){
         this.isHost = false;
