@@ -28,6 +28,9 @@ class Session {
         this.host.oppo = player;
         player.oppo = this.host;
         this.players.push(player);
+
+        player.socket.emit('join_response', protocol.join_response(true));
+        console.log(`${player.name} join successed`);
     }
 
     // 게임을 시작한다.
@@ -35,7 +38,10 @@ class Session {
         for (var player of this.players) {
             // 게임 시작을 보낸다.
             player.socket.emit('game_start', protocol.game_start());
-            
+            console.log(`Game Started`);
+        }
+        
+        for (var player of this.players) {
             // 배치
             player.socket.on('place_done', (msg) => {
                 player.isReady = true;

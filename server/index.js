@@ -53,8 +53,6 @@ io.on('connection', (socket) =>{
         // 해당 세션에 클라이언트를 추가한다.
         let session = sessions[hostName];
         session.join(player);
-        socket.emit('join_response', protocol.join_response(true));
-        console.log(`${player.name} join successed`);
         
         // 게임을 시작한다.
         session.start();

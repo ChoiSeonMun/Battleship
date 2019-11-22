@@ -41,8 +41,8 @@ cc.Class({
         this.joinPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
         //socket event
         cc.Socket.on('host_response',this.host_response_handler);
-        cc.Socket.on("game_start", cc.protocol.join_response);
-        cc.Socket.on("game_start", cc.protocol.join_response);
+        cc.Socket.on("game_start", this.game_start_handler);
+        cc.Socket.on("join_response",this.join_response_handler);
         // Main
         this.hostButton.node.on("click", this.setHost, this);
         this.joinButton.node.on("click", this.setJoin, this);
@@ -113,12 +113,14 @@ cc.Class({
     },
     join_response_handler (Res_data)
     {
+        console.log('join_response_handler');
         if(Res_data.Result)
         {
         }
     },
     game_start_handler()
     {
+        console.log('gamestart');
         cc.director.loadScene("attacktest");
     },
     closePanel: function(){
