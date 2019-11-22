@@ -23,19 +23,8 @@ cc.Class({
         if (manager.target != null && manager.target.ship != null)
             manager.deleteTargetShip();
     },
-    onCompleteButtonClick: function (event) {
-        this.GameManager.getComponent("GameManager").buildComplete();
-    },
     onStartButtonClick:function(){
+        this.GameManager.getComponent("GameManager").buildComplete();
         this.GameManager.getComponent("GameManager").changeBattlePhase();
     },
-    // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {},
-
-    start () {
-
-    },
-
-    // update (dt) {},
 });
