@@ -19,17 +19,17 @@ io.on('connection', (socket) =>{
 
     // 호스팅
     socket.on('host_request', (msg) => {
-        // 소켓에 닉네임을 매칭한다.
+        // 플레이어를 생성한다.
         let data = JSON.parse(msg);
-        socket.nickname = data.UserName;
+        player = new Player(socket, data.UserName);
         
-        // 닉네임이 중복되는지 검사한다.
-        if (sessions[socket.nickname] === undefined) {
+        // 세션의 유무를 체크한다.
+        if (sessions[player.nickname] === undefined) {
             socket.emit('host_response', protocol.host_response(false));
             return;
         }
 
-        sessions[socket.nickname] = new Session(socket);
+        sessions[player.nickname] = new Session(player);
         socket.emit('host_response', protocol.host_response(true));
     });
 
@@ -46,8 +46,12 @@ io.on('connection', (socket) =>{
             return;
         }
 
+        // 해당 세션에 클라이언트를 추가한다.
         let session = sessions[hostName];
         session.join(socket);
         socket.emit('join_response', protocol.join_response(true));
+        
+        // 게임을 시작한다.
+        session.start();
     });
 });
