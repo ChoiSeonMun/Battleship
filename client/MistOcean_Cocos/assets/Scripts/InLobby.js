@@ -1,4 +1,6 @@
 var socketio=require('socket.io-client');
+var url='http://127.0.0.1:12345';
+cc.Socket=socketio.connect(url);
 cc.Class({
     extends: cc.Component,
 
@@ -81,7 +83,7 @@ cc.Class({
             if (this.hostEditBox.string != "") {
             var text = "Input : " + this.hostEditBox.string;
             this.hostInputLabel.string = text;
-            socketio.Socket.emit("host_request", protocol.host_request(this.hostEditBox.string));
+            cc.Socket.emit("host_request", cc.protocol.host_request(this.hostEditBox.string));
             }
         }
         else if(this.isJoin)
@@ -90,7 +92,7 @@ cc.Class({
             {
                 // this.hostInputLabel.string = text;    
                 // this.joinInputLabel.string = text;
-                socketio.Socket.emit("join_request", protocol.join_request(this.joinClientEditBox.string, this.joinHostEditBox.string));
+                cc.Socket.emit("join_request", cc.protocol.join_request(this.joinClientEditBox.string, this.joinHostEditBox.string));
             }
         }
         
@@ -103,14 +105,14 @@ cc.Class({
     {
         if(Res_data.Result)
         {
-            socketio.Socket.on("game_start", protocol.host_response);
+            cc.Socket.on("game_start", cc.protocol.host_response);
         }
     },
     join_response_handler (Res_data)
     {
         if(Res_data.Result)
         {
-            socketio.Socket.on("game_start", protocol.join_response);
+            cc.Socket.on("game_start", cc.protocol.join_response);
         }
     },
     game_start_handler()
