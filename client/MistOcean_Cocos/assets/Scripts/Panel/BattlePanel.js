@@ -13,7 +13,11 @@ cc.Class({
         TurnLabel: {
             default: null,
             type: cc.Label
-        }
+        },
+        FieldLabel: {
+            default: null,
+            type: cc.Label
+        },
     },
     setShipCount: function (value) {
         for (var i = 0; i < 3; ++i)
@@ -25,6 +29,7 @@ cc.Class({
     },
     onChangeButtonClick: function () {
         this.GameManager.getComponent("GameManager").changeContainer();
+        this.FieldLabel.string = (this.FieldLabel.string == "상대 필드") ? "내 필드" : "상대 필드";
     },
     onAttackButtonClick: function () {
         this.GameManager.getComponent("GameManager").attackTarget();
@@ -32,13 +37,4 @@ cc.Class({
     onTest: function () {
         this.GameManager.getComponent("GameManager").isMyTurn = true;
     },
-    // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {},
-
-    start() {
-
-    },
-
-    // update (dt) {},
 });
