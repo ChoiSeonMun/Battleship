@@ -1,4 +1,4 @@
-export class Player {
+class Player {
     constructor(sock, name) {
         this.id = sock.id;
         this.name = name;
@@ -7,3 +7,4 @@ export class Player {
         this.oppo = undefined;
     }
 }
+module.exports.Player=Player;

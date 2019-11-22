@@ -1,6 +1,7 @@
 const settings = require("../Common/settings").settings;
 const protocol = require("../Common/protocol").protocol;
-
+const Player=require('./Player').Player;
+const Session=require('./Session').Session;
 var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
@@ -24,7 +25,7 @@ io.on('connection', (socket) =>{
         var player = new Player(socket, data.UserName);
         
         // 세션의 유무를 체크한다.
-        if (sessions[player.nickname] === undefined) {
+        if (sessions[player.nickname] !== undefined) {
             socket.emit('host_response', protocol.host_response(false));
             console.log(`${player.name} host failed`);
             return;

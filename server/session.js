@@ -1,6 +1,6 @@
 const protocol = require('../Common/protocol.js').protocol;
 
-export class Session {
+class Session {
     constructor(player) {
         // 플레이어의 id로 room을 만들어 join 시킨다.
         player.socket.join(player.id, () => {
@@ -11,7 +11,7 @@ export class Session {
         // 기본 세팅한다.
         this.players = {};
         this.host = player;
-        this.room = hostSocket.rooms[1];
+        this.room = player.socket.rooms[1];
 
         this.players[player.name] = player;
     }
@@ -80,3 +80,4 @@ export class Session {
         }
     }
 }
+module.exports.Session=Session;
