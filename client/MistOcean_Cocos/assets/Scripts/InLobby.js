@@ -1,5 +1,4 @@
 var socketio=require('socket.io-client');
-cc.protocol=require('../../../../Common/protocol').protocol;
 cc.Class({
     extends: cc.Component,
 
