@@ -92,7 +92,7 @@ cc.ZOrder = cc.Enum({
     Tile: 1,
     Ship: 2,
     Preview: 3,
-    Hilight: 4
+    Highlight: 4
 });
 cc.AttackEventType = cc.Enum({
     default: -1,

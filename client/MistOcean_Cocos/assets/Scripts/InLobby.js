@@ -11,9 +11,13 @@ cc.Class({
             default: null,
             type: cc.Button,
         },
-        panel: {
+        hostPanel: {
             default: null,
             type: cc.Layout,
+        },
+        joinPanel: {
+            default: null,
+            type: cc.Layout
         },
     },
 
@@ -22,12 +26,16 @@ cc.Class({
         this.panelState = false;
         this.isHost = false;
         this.isJoin = false;
-        this.panelName = this.panel.node.getChildByName("PanelName Label").getComponent(cc.Label);
-        this.editBox = this.panel.node.getChildByName("Input EditBox").getComponent(cc.EditBox);
-        this.okButton = this.panel.node.getChildByName("Ok Button").getComponent(cc.Button);
-        this.okButton.node.on("click", this.okClick, this);
-        this.inputLabel = this.panel.node.getChildByName("Input Label").getComponent(cc.Label);
-        this.panel.node.getChildByName("Close Button").on("click", this.closePanel, this);
+        this.hostEditBox = this.hostPanel.node.getChildByName("Host").getChildByName("Input EditBox").getComponent(cc.EditBox);
+        this.joinEditBox = this.joinPanel.node.getChildByName("Client").getChildByName("Input EditBox").getComponent(cc.EditBox);
+        this.hostOkButton = this.hostPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
+        this.hostOkButton.node.on("click", this.okClick, this);
+        this.joinOkButton = this.joinPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
+        this.joinOkButton.node.on("click", this.okClick, this);
+        this.hostInputLabel = this.hostPanel.node.getChildByName("Host").getChildByName("Name Label").getComponent(cc.Label);
+        this.joinInputLabel = this.joinPanel.node.getChildByName("Client").getChildByName("Name Label").getComponent(cc.Label);
+        this.hostPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
+        this.joinPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
 
         // Main
         this.hostButton.node.on("click", this.setHost, this);
@@ -35,49 +43,51 @@ cc.Class({
     },
 
     setHost: function () {
-        this.panelName.string = "Host";
         this.isHost ^= true;
         this.isJoin = false;
         this.setPanel();
     },
     setJoin: function () {
-        this.panelName.string = "Join";
         this.isJoin ^= true;
         this.isHost = false;
         this.setPanel();
     },
     setPanel: function(){
-        console.log("set");
         if (this.isHost || this.isJoin) this.onPanel();
         else this.offPanel();
     },
     onPanel: function () {
-        console.log("on");
-        if (!this.panelState) {
-            this.panelState = true;
-            this.panel.node.active = true;
+        this.panelState = true;
+        if (this.isHost) {
+            this.hostPanel.node.active = true;
+            this.joinPanel.node.active = false;
+            this.isJoin = false;
+        }
+        if (this.isJoin) {
+            this.joinPanel.node.active = true;
+            this.hostPanel.node.active = false;
+            this.isHost = false;
         }
     },
     offPanel: function () {
-        console.log("off");
         this.panelState = false;
-        this.panel.node.active = false;
+        this.hostPanel.node.active = false;
+        this.joinPanel.node.active = false;
     },
     okClick: function() {
-        console.log("click");
-        if (this.editBox.string != "")
-            this.inputLabel.string = "Input : " + this.editBox.string;
-        else
-            this.inputLabel.string = "";
+        if (this.editBox.string != "") {
+            var text = "Input : " + this.editBox.string;
+            if (this.isHost) this.hostInputLabel.string = text;
+            else if (this.isJoin) this.joinInputLabel.string = text;
+        }
+        else {
+            if (this.isHost) this.hostInputLabel.string = "";
+            else if (this.isJoin) this.joinInputLabel.string = "";
+        }
     },
     closePanel: function(){
         this.isHost = false;
         this.isJoin = false;
         this.offPanel();
     },
-
-
-    TestFunc: function(){
-        console.log("TestFunc()");
-    }
 });
