@@ -34,7 +34,7 @@ cc.Class({
             default: null,
             type: cc.Prefab,
         },
-        TileHighlighyPrefab: {
+        TileHighlightPrefab: {
             default: null,
             type: cc.Prefab,
         },
@@ -167,14 +167,14 @@ cc.Class({
     },
     selectTile: function (hex) {                        //target을 지정하고 highlight와 preview 생성
         this.target = hex;
-        this.showTileHighlighy(hex.R, hex.C);
+        this.showTileHighlight(hex.R, hex.C);
         if (this.currentScreen == cc.ScreenType.Build)
             this.showShipPreview();
     },
-    showTileHighlighy: function (R, C) {                  //현재 화면 R,C위치에 highlight 생성
+    showTileHighlight: function (R, C) {                  //현재 화면 R,C위치에 highlight 생성
         if (this.highlight == null) {
-            this.highlight = cc.instantiate(this.TileHighlighyPrefab);
-            this.highlight.zIndex = cc.ZOrder.Highlighy;
+            this.highlight = cc.instantiate(this.TileHighlightPrefab);
+            this.highlight.zIndex = cc.ZOrder.Highlight;
             this.tileContainer[this.currentScreen - 1].addChild(this.highlight);
         }
         this.highlight.setPosition(this.getTilePos(R, C));
@@ -307,6 +307,23 @@ cc.Class({
         this.shipCount = [2, 2, 1];
         this.enableBattleEvents();
         this.spawnEnermyTiles();
+        cc.socket.on('attack_response', this.attack_res_handle);         //공격 후 판정
+        cc.socket.on('attack_forward', this.attack_forward_handle);      //공격 받을 때
+    },
+    attack_res_handle(res_data) {
+        console.log('공격 완료');
+        for (var t of res_data.Tiles)
+            this.changeTile(t.Changed[0], t.Changed[1], t.Type, false);
+        this.enemyCount[cc.ShipType.Small - 2] = res_data.ShipCount.Small;
+        this.enemyCount[cc.ShipType.Middle - 2] = res_data.ShipCount.Middle;
+        this.enemyCount[cc.ShipType.Big - 2] = res_data.ShipCount.Big;
+    },
+    attack_forward_handle(forward_data) {
+        var R=forward_data.Position[0];
+        var C=forward_data.Position[1];
+        console.log('공격 수신',R,C);
+        var res_data = this.DamageStep(R,C);
+        cc.socket.emit('attack_result', res_data);
     },
     isLose: function () {                               //
         return this.shipCount[0] + this.shipCount[1] + this.shipCount[2] == 0;
@@ -340,42 +357,27 @@ cc.Class({
             this.target == null ||                          //선택된 타일이 없거나
             this.target.isNotSelectable())     //선택 가능한 타일이 아니면
             return;
-        var R = this.target.R;
-        var C = this.target.C;
-        console.log("공격", R, C);
-        var attackData = this.sendAttack(R, C);
-        this.updateEnemyTile(attackData);
+        var attackData = {
+            Position: [this.target.R, this.target.R]
+        };
+        console.log("공격 송신", attackData);
+        cc.socket.emit('attack_request', attackData);
         this.deselectTile();
-    },
-    sendAttack: function (R, C) {                       //공격 위치 송신
-        var response = this.receiveAttack(R, C);
-        return response;
-    },
-    receiveAttack: function (R, C) {                     //공격 위치 수신
-        var response = this.DamageStep(R, C);
-        return response;
-
-    },
-    updateEnemyTile: function (attackData) {            //공격의 판정 결과에 따라 적 타일 갱신
-        var ct = attackData.changeTiles;
-        console.log('update enemy info');
-        for (var i = 0; i < ct[0].length; ++i)
-            this.changeTile(ct[0][i].y, ct[0][i].x, ct[1][i], false);
-        this.enemyCount = attackData.shipCnt;
-        console.log(this.enemyCount, attackData.shipCnt);
-        this.isMyTurn = attackData.continueTurn;
-        if (attackData.win)
-            this.gameEnd(true);
+        this.isMyTurn = false;
     },
     DamageStep: function (R, C) {                       //공격 받은 후 판정 결과 전달
-        var attackData = {};
-        attackData.changeTiles = this.tileAttacked(R, C);
-        attackData.continueTurn = this.tiles[R][C].isShip();
-        attackData.win = this.isLose();
-        attackData.shipCnt = this.shipCount;
+        var tiles = this.tileAttacked(R, C);
+        var res_data = {
+            Tiles: tiles,
+            ShipCount: {
+                Small: this.shipCount[cc.ShipType.Small - 2],
+                Middle: this.shipCount[cc.ShipType.SmMiddleall - 2],
+                Big: this.shipCount[cc.ShipType.Big - 2],
+            }
+        };
         //if(attackData.win)
         //    this.gameEnd(false);
-        return attackData;
+        return res_data;
     },
     CheckTile: function (R, C) {                        //타일의 이벤트 타입  판정
         var tile = this.tiles[R][C];
@@ -414,7 +416,7 @@ cc.Class({
     emptyTileAttacked: function (R, C) {                //빈 타일 공격 판정 후 결과 반환
         console.log("attacked", R, C);
         this.changeTile(R, C, cc.TileType.Damaged);
-        return [[cc.v2(C, R)], [cc.TileType.Selected]];
+        return { Changed: [cc.v2(C, R)], Type: [cc.TileType.Selected] };
     },
     bombExplosion: function (R, C) {                    //폭탄 타일 공격 판정 후 결과 반환
         var ct = [[], []];
