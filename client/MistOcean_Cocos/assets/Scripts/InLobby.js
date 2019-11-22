@@ -1,3 +1,4 @@
+var socketio=require('socket.io-client');
 cc.Class({
     extends: cc.Component,
 
