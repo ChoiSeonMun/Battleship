@@ -35,6 +35,5 @@ cc.Class({
     onStartButtonClick: function () {
         this.ModeLabel.string = "";
         this.GameManager.getComponent("GameManager").buildComplete();
-        this.GameManager.getComponent("GameManager").changeBattlePhase();
     },
 });

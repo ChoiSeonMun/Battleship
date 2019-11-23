@@ -93,7 +93,8 @@ cc.Class({
             }
             else {
                 this.hostErrorLabel.string = "";
-                cc.Socket.emit("host_request", cc.protocol.host_request(this.hostEditBox.string));
+                cc.userName=this.hostEditBox.string;
+                cc.Socket.emit("host_request", cc.protocol.host_request(cc.userName));
             }
         }
         else if (this.isJoin) {
@@ -105,7 +106,8 @@ cc.Class({
             }
             else {
                 this.joinErrorLabel.string = "";
-                cc.Socket.emit("join_request", cc.protocol.join_request(this.joinClientEditBox.string, this.joinHostEditBox.string));
+                cc.userName=this.joinClientEditBox.string;
+                cc.Socket.emit("join_request", cc.protocol.join_request(cc.userName, this.joinHostEditBox.string));
             }
         }
     },
