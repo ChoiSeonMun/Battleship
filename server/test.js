@@ -87,12 +87,12 @@ socketio.on('connection', function (socket) {
 
     });
     socket.on('attack_request', (msg) => {
-        socket.Pair.emit('attack_forward', protocol.attack_forward(msg));
-        console.log(`${socket.UserName}'s attack start`);
+        socket.Pair.emit('attack_forward',msg);
+        console.log(`${socket.UserName}'s attack start`,msg);
     });
     socket.on('attack_result', (msg) => {
-        socket.Pair.emit('attack_response', protocol.attack_result(msg));
-        console.log(`${socket.PairName}'s attack end`);
+        socket.Pair.emit('attack_response', msg);
+        console.log(`${socket.PairName}'s attack end`,msg);
     });
     socket.on('turn_end', (msg) => {
         // 게임이 끝났는지 확인한다.

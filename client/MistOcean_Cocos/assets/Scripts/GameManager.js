@@ -322,23 +322,28 @@ cc.Class({
     },
     attack_res_handle(res_data) {
         console.log('공격 완료');
-        for (var t of res_data.Tiles)
-            cc.GameManager.changeTile(t.Changed[0], t.Changed[1], t.Type, false);
-        cc.GameManager.enemyCount[cc.ShipType.Small - 2] = res_data.ShipCount.Small;
-        cc.GameManager.enemyCount[cc.ShipType.Middle - 2] = res_data.ShipCount.Middle;
-        cc.GameManager.enemyCount[cc.ShipType.Big - 2] = res_data.ShipCount.Big;
+        var data = JSON.parse(res_data);
+        console.log(data);
+        for (var i = 0; i < data.Tiles.Changed.length; ++i) {
+            var t = data.Tiles.Changed[i];
+            cc.GameManager.changeTile(t[0], t[1], data.Tiles.Type[i], false);
+        }
+        cc.GameManager.enemyCount[cc.ShipType.Small - 2] = data.ShipCount.Small;
+        cc.GameManager.enemyCount[cc.ShipType.Middle - 2] = data.ShipCount.Middle;
+        cc.GameManager.enemyCount[cc.ShipType.Big - 2] = data.ShipCount.Big;
     },
     attack_forward_handle(forward_data) {
         console.log(forward_data);
-        var R = forward_data.Position[0];
-        var C = forward_data.Position[1];
+        var data = JSON.parse(forward_data);
+        var R = data.Position[0];
+        var C = data.Position[1];
         console.log('공격 수신', R, C);
         var res_data = cc.GameManager.DamageStep(R, C);
-        cc.Socket.emit('attack_result', res_data);
+        cc.Socket.emit('attack_result', JSON.stringify(res_data));
         if (cc.GameManager.isLose())
-            cc.Socket.emit('gameover', cc.protocol.gameover(cc.userName));
-        else if (cc.GameManager.tiles[R][C].isShip())
             cc.Socket.emit('turn_end', cc.protocol.turn_end(true));
+        else if (cc.GameManager.tiles[R][C].isShip())
+            cc.Socket.emit('turn_end', cc.protocol.turn_end(false));
         else
             cc.GameManager.isMyTurn = true;
 
@@ -384,13 +389,14 @@ cc.Class({
     DamageStep: function (R, C) {                       //공격 받은 후 판정 결과 전달
         var tiles = this.tileAttacked(R, C);
         var res_data = {
-            Tiles: tiles,
             ShipCount: {
                 Small: this.shipCount[cc.ShipType.Small - 2],
-                Middle: this.shipCount[cc.ShipType.SmMiddleall - 2],
+                Middle: this.shipCount[cc.ShipType.Middle - 2],
                 Big: this.shipCount[cc.ShipType.Big - 2],
-            }
+            },
+            Tiles: tiles
         };
+        console.log(res_data);
         //if(attackData.win)
         //    this.gameEnd(false);
         return res_data;
