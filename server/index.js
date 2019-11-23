@@ -24,7 +24,7 @@ io.on('connection', (socket) =>{
         // 메시지를 파싱한다.
         let data = JSON.parse(msg);
         var player = new Player(socket, data.UserName);
-        players[socket.id] = player;
+        players[data.User] = player;
 
         // 세션이 있다면 호스팅을 할 수 없다.
         if (sessions[player.name] !== undefined) {
@@ -65,9 +65,15 @@ io.on('connection', (socket) =>{
     // 배치
     socket.on('place_done', (msg) => {
         var player = players[socket.id];
+        console.log(players);
+        console.log(socket.id,player);
         player.isReady = true;
-        player.session.setReady(player);
         console.log(`${player.name} is ready`);
+        if(player.socket.oppo.isReady){
+            socket.emit('place_end','');
+            player.socket.oppo.emit('place_end','');
+            console.log('place_end');
+        }
     });
 
     // 공격

@@ -113,8 +113,26 @@ cc.Class({
         this.isMyTurn = true;                       //type:bool, 현재 나의 차례인가?
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);            //type:Number, 다음 타일과의 X축 거리
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);    //type:Number, 다음 타일과의 Y축 거리
-        cc.Socket.on('place_end',function(){
-            this.changeBattlePhase();
+        cc.Socket.on('place_end',function () {                    //battle phase로 전환
+            console.log('place_end');
+            if (!this.buildCompleted)
+                return;
+            console.log("전투 시작");
+            this.isMyTurn = false;             //방장이 먼저 턴을 갖게//
+            this.buildPanel.setPosition(cc.v2(-884, 0));
+            this.battlePanel.setPosition(cc.v2(0, 0));
+            this.changeContainer();
+            this.shipCount = [2, 2, 1];
+            this.enableBattleEvents();
+            this.spawnEnermyTiles();
+            cc.Socket.on('attack_response', this.attack_res_handle);         //공격 후 판정
+            cc.Socket.on('attack_forward', this.attack_forward_handle);      //공격 받을 때
+            cc.Socket.on('turn_start',function(){
+                this.isMyTurn=true;
+            });
+            cc.Socket.on('gameover',function(){
+    
+            });
         });
     },
     spawnBuildTiles: function () {                      //width x hegiht 갯수만큼 build타일 생성
@@ -272,6 +290,8 @@ cc.Class({
             console.log("배치가 끝나지 않음");
             return;
         }
+        if (this.buildCompleted)
+            return;
         this.deselectTile();
         this.assignItems();
         this.disableBuildEvents();
