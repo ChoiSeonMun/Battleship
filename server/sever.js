@@ -112,7 +112,7 @@ socketio.on('connection', function (socket) {
     socket.on('disconnect', function () {
         if (socket.PairName != undefined) {
             if (user_names[socket.PairName] != undefined)
-                socketio.sockets.connected[user_names[socket.PairName]].emit('pairmissing', '');
+                socket.Pair.emit('pair_missing', '');
         }
         delete user_names[socket.UserName];
         console.log('disconnect:', socket.id);
@@ -120,53 +120,3 @@ socketio.on('connection', function (socket) {
 
 
 });
-//-----------------------------------//
-
-/*
-
-const settings = require("../Common/settings").settings;
-const protocol = require("../Common/protocol").protocol;
-const Player = require('./Player').Player;
-const Session = require('./Session').Session;
-var app = require('express')();
-var http = require('http').createServer(app);
-var io = require('socket.io');
-var sessions = {};
-var players = {};
-var a = io.so
-http.listen(settings.PORT, () => {
-    console.log(`listening on *: ${settings.PORT}`);
-});
-
-io.on('connection', (socket) => {
-    // 연결 및 해제
-    console.log(`${socket.id} is connected`);
-    socket.on('disconnected', function () {
-        console.log(`${socket.id} is disconnected`);
-    });
-
-    // 호스팅
-    socket.on('host_request', (msg) => {
-        // 메시지를 파싱한다.
-        let data = JSON.parse(msg);
-        var player = new Player(socket, data.UserName);
-        players[socket.id] = player;
-
-        // 세션이 있다면 호스팅을 할 수 없다.
-        if (sessions[player.name] !== undefined) {
-            player.emit('host_response', protocol.host_response(false));
-            console.log(`${player.name} host failed`);
-            return;
-        }
-
-        // 세션을 생성한다.
-        sessions[player.name] = new Session(player);
-        player.emit('host_response', protocol.host_response(true));
-        console.log(`${player.name} host successed`);
-    });
-
-
-
-
-});
-*/

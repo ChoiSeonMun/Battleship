@@ -15,9 +15,7 @@
     "subContext": ""
   },
   "encryptJs": true,
-  "excludeScenes": [
-    "aa3a6f0c-9576-4368-b60e-87015f697fbc"
-  ],
+  "excludeScenes": [],
   "fb-instant-games": {},
   "includeSDKBox": false,
   "inlineSpriteFrames": true,
@@ -37,7 +35,7 @@
     "orientation": "portrait",
     "zip": false
   },
-  "startScene": "70bea517-f238-4826-8ffd-39f0fa53158b",
+  "startScene": "aa3a6f0c-9576-4368-b60e-87015f697fbc",
   "title": "MistOcean_Cocos",
   "webOrientation": "auto",
   "wechatgame": {

@@ -1,6 +1,5 @@
 var socketio = require('socket.io-client');
-var url = 'http://127.0.0.1:12345';
-cc.Socket = socketio.connect(url);
+var url = 'http://172.19.86.4:12345';
 cc.Class({
     extends: cc.Component,
 
@@ -40,10 +39,6 @@ cc.Class({
         this.joinErrorLabel = this.joinPanel.node.getChildByName("Error Label").getComponent(cc.Label);
         this.hostPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
         this.joinPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
-        //socket event
-        cc.Socket.on('host_response',this.host_response_handler);
-        cc.Socket.on("game_start", this.game_start_handler);
-        cc.Socket.on("join_response",this.join_response_handler);
         // Main
         this.hostButton.node.on("click", this.setHost, this);
         this.joinButton.node.on("click", this.setJoin, this);
@@ -87,9 +82,18 @@ cc.Class({
         this.joinPanel.node.active = false;
     },
     okClick: function () {
+        cc.Socket = socketio.connect(url);
+        //socket event
+        cc.Socket.on('host_response',this.host_response_handler);
+        cc.Socket.on("game_start", this.game_start_handler);
+        cc.Socket.on("join_response",this.join_response_handler);
+        cc.Socket.on('pair_missing',function(){
+            cc.Socket.disconnect();
+        });
         if (this.isHost) {
             if (this.hostEditBox.string == "") {
                 this.hostErrorLabel.string = "이름을 입력하세요!";
+                cc.Socket.disconnect();
             }
             else {
                 this.hostErrorLabel.string = "";
@@ -100,9 +104,11 @@ cc.Class({
         else if (this.isJoin) {
             if (this.joinHostEditBox.string == "") {
                 this.joinErrorLabel.string = "상대 이름을 입력하세요!"
+                cc.Socket.disconnect();
             }
             else if (this.joinClientEditBox.string == "") {
                 this.joinErrorLabel.string = "이름을 입력하세요!"
+                cc.Socket.disconnect();
             }
             else {
                 this.joinErrorLabel.string = "";
@@ -113,16 +119,18 @@ cc.Class({
     },
     host_response_handler (Res_data)
     {
-        console.log('host_response');
-        if(Res_data.Result)
+        console.log('host_response',Res_data);
+        if(!JSON.parse(Res_data).Result)
         {
+            cc.Socket.disconnect();
         }
     },
     join_response_handler (Res_data)
     {
-        console.log('join_response_handler');
-        if(Res_data.Result)
+        console.log('join_response_handler',Res_data);
+        if(!JSON.parse(Res_data).Result)
         {
+            cc.Socket.disconnect();
         }
     },
     game_start_handler()
