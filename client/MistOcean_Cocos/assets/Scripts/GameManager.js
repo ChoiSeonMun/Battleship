@@ -68,6 +68,7 @@ cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     onLoad: function () {
+        cc.GameManager = this;
         this.declareVariable();
         this.enableBuildEvents();
         this.setShipPrefabs();
@@ -113,27 +114,12 @@ cc.Class({
         this.isMyTurn = true;                       //type:bool, 현재 나의 차례인가?
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);            //type:Number, 다음 타일과의 X축 거리
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);    //type:Number, 다음 타일과의 Y축 거리
-        cc.Socket.on('place_end',function () {                    //battle phase로 전환
-            console.log('place_end');
-            if (!this.buildCompleted)
-                return;
-            console.log("전투 시작");
-            this.isMyTurn = false;             //방장이 먼저 턴을 갖게//
-            this.buildPanel.setPosition(cc.v2(-884, 0));
-            this.battlePanel.setPosition(cc.v2(0, 0));
-            this.changeContainer();
-            this.shipCount = [2, 2, 1];
-            this.enableBattleEvents();
-            this.spawnEnermyTiles();
-            cc.Socket.on('attack_response', this.attack_res_handle);         //공격 후 판정
-            cc.Socket.on('attack_forward', this.attack_forward_handle);      //공격 받을 때
-            cc.Socket.on('turn_start',function(){
-                this.isMyTurn=true;
-            });
-            cc.Socket.on('gameover',function(){
-    
-            });
-        });
+        cc.Socket.on('place_end', this.place_end_handle);
+    },
+    place_end_handle() {
+        console.log('place_end');
+        console.log(cc.GameManager);
+        cc.GameManager.changeBattlePhase();
     },
     spawnBuildTiles: function () {                      //width x hegiht 갯수만큼 build타일 생성
         for (var r = 0; r < this.height; ++r) {
@@ -297,7 +283,7 @@ cc.Class({
         this.disableBuildEvents();
         this.buildCompleted = true;
         console.log("배치 완료");
-        cc.Socket.emit('place_done',cc.protocol.place_done());
+        cc.Socket.emit('place_done', cc.protocol.place_done());
     },
     assignItems: function () {                          //아이템 랜덤 배치
         console.log("폭탄 배치");
@@ -315,9 +301,7 @@ cc.Class({
 
         this.changeTile(bombY, bombX, cc.TileType.Bomb);
     },
-    changeBattlePhase: function () {                    //battle phase로 전환
-        if (!this.buildCompleted)
-            return;
+    changeBattlePhase() {                    //battle phase로 전환
         console.log("전투 시작");
         this.isMyTurn = false;             //방장이 먼저 턴을 갖게//
         this.buildPanel.setPosition(cc.v2(-884, 0));
@@ -328,34 +312,36 @@ cc.Class({
         this.spawnEnermyTiles();
         cc.Socket.on('attack_response', this.attack_res_handle);         //공격 후 판정
         cc.Socket.on('attack_forward', this.attack_forward_handle);      //공격 받을 때
-        cc.Socket.on('turn_start',function(){
-            this.isMyTurn=true;
+        cc.Socket.on('turn_start', function () {
+            console.log('turn start');
+            cc.GameManager.isMyTurn = true;
         });
-        cc.Socket.on('gameover',function(){
-
+        cc.Socket.on('gameover', function () {
+            console.log('gameover');
         });
     },
     attack_res_handle(res_data) {
         console.log('공격 완료');
         for (var t of res_data.Tiles)
-            this.changeTile(t.Changed[0], t.Changed[1], t.Type, false);
-        this.enemyCount[cc.ShipType.Small - 2] = res_data.ShipCount.Small;
-        this.enemyCount[cc.ShipType.Middle - 2] = res_data.ShipCount.Middle;
-        this.enemyCount[cc.ShipType.Big - 2] = res_data.ShipCount.Big;
+            cc.GameManager.changeTile(t.Changed[0], t.Changed[1], t.Type, false);
+        cc.GameManager.enemyCount[cc.ShipType.Small - 2] = res_data.ShipCount.Small;
+        cc.GameManager.enemyCount[cc.ShipType.Middle - 2] = res_data.ShipCount.Middle;
+        cc.GameManager.enemyCount[cc.ShipType.Big - 2] = res_data.ShipCount.Big;
     },
     attack_forward_handle(forward_data) {
-        var R=forward_data.Position[0];
-        var C=forward_data.Position[1];
-        console.log('공격 수신',R,C);
-        var res_data = this.DamageStep(R,C);
+        console.log(forward_data);
+        var R = forward_data.Position[0];
+        var C = forward_data.Position[1];
+        console.log('공격 수신', R, C);
+        var res_data = cc.GameManager.DamageStep(R, C);
         cc.Socket.emit('attack_result', res_data);
-        if(this.isLose())
-            cc.Socket.emit('gameover',cc.protocol.gameover(cc.userName));
-        else if(this.tiles[R][C].isShip())
-            cc.Socket.emit('turn_end',cc.protocol.turn_end(true));
+        if (cc.GameManager.isLose())
+            cc.Socket.emit('gameover', cc.protocol.gameover(cc.userName));
+        else if (cc.GameManager.tiles[R][C].isShip())
+            cc.Socket.emit('turn_end', cc.protocol.turn_end(true));
         else
-            this.isMyTurn=true;
-        
+            cc.GameManager.isMyTurn = true;
+
     },
     isLose: function () {                               //
         return this.shipCount[0] + this.shipCount[1] + this.shipCount[2] == 0;
@@ -390,7 +376,7 @@ cc.Class({
             this.target.isNotSelectable())     //선택 가능한 타일이 아니면
             return;
         var attackData = cc.protocol.attack_request([this.target.R, this.target.C]);
-        console.log("공격 송신",attackData );
+        console.log("공격 송신", attackData);
         cc.Socket.emit('attack_request', attackData);
         this.deselectTile();
         this.isMyTurn = false;
@@ -428,7 +414,7 @@ cc.Class({
                 return this.bombExplosion(R, C);
             case cc.AttackEventType.Ship:
                 return this.shipAttacked(R, C);
-            default: return {Changed:[],Type:[]};
+            default: return { Changed: [], Type: [] };
         }
     },
     getTiles: function (ismytile) {                     //내 타일 또는 적 타일들 반환
@@ -446,16 +432,16 @@ cc.Class({
     emptyTileAttacked: function (R, C) {                //빈 타일 공격 판정 후 결과 반환
         console.log("attacked", R, C);
         this.changeTile(R, C, cc.TileType.Damaged);
-        return { Changed: [[R,C]], Type: [cc.TileType.Selected] };
+        return { Changed: [[R, C]], Type: [cc.TileType.Selected] };
     },
     bombExplosion: function (R, C) {                    //폭탄 타일 공격 판정 후 결과 반환
-        var ct = {Changed:[],Type:[]};
+        var ct = { Changed: [], Type: [] };
         this.changeTile(R, C, cc.TileType.Damaged);
         for (var v of cc.EDirec.getAllDirec())
             if (this.inRange(R + v.y, C + v.x))
                 this.concatChangeTiles(ct, this.tileAttacked(R + v.y, C + v.x));
         console.log("explosion", R, C);
-        ct.Changed.push([R,C]);
+        ct.Changed.push([R, C]);
         ct.Type.push(cc.TileType.Bomb);
         return ct;
     },
@@ -472,7 +458,7 @@ cc.Class({
         else
             ct = this.attackSide(R, C);
 
-        ct.Changed.push([R,C]);
+        ct.Changed.push([R, C]);
         ct.Type.push(cc.TileType.Enermy);
         return ct;
     },
@@ -499,7 +485,7 @@ cc.Class({
         var direcs = cc.EDirec.getAllDirec();
         console.log("sinking ship", ship.R, ship.C);
         var bomb = this.findBomb(ships, direcs);
-        var ct = {Changed:[],Type:[]};
+        var ct = { Changed: [], Type: [] };
         if (bomb != null)
             ct = this.bombExplosion(bomb.y, bomb.x);
         this.concatChangeTiles(ct, this.attackDirec(ships, direcs));
@@ -507,7 +493,7 @@ cc.Class({
         return ct;
     },
     attackSide: function (R, C) {                       //배 타일이 판정 결과 두 칸 이상 공격받았으면 양 옆 타일 확인
-        var ct = {Changed:[],Type:[]};
+        var ct = { Changed: [], Type: [] };
         var ships = this.getConnections(R, C);
         if (ships.length == 1)
             return ct;
@@ -527,7 +513,7 @@ cc.Class({
     },
     attackDirec: function (ships, direcs) {             // ships 근처 direcs를 모두 확인
         var tiles = this.tiles;
-        var ct = {Changed:[],Type:[]};
+        var ct = { Changed: [], Type: [] };
         for (var v1 of ships) {
             for (var v2 of direcs) {
                 var R = v1.y + v2.y;

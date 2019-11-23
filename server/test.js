@@ -35,7 +35,7 @@ socketio.on('connection', function (socket) {
         user_names[data.UserName] = socket.id;
         socket.UserName = data.UserName;
         socket.Wait = true;
-        socket.isHost=true;
+        socket.isHost = true;
         socket.emit('host_response', protocol.host_response(true));
         console.log(`${socket.UserName} host successed`);
     });
@@ -46,21 +46,23 @@ socketio.on('connection', function (socket) {
         let data = JSON.parse(msg);
         var hostid = user_names[data.HostName];
         var host = hostid === undefined ? null : socketio.sockets.connected[hostid];
-        if(user_names[data.UserName]!==undefined
-            ||host==null||!host.Wait){
+        if (user_names[data.UserName] !== undefined
+            || host == null || !host.Wait) {
             socket.emit('join_response', protocol.join_response(false));
             console.log(`${data.UserName} join failed`);
             return;
         }
-        user_names[data.UserName]=socket.id;
-        socket.UserName=data.UserName;
-        socket.PairName=data.HostName;
-        socket.wait=false;
-        socket.isHost=false;
-        host.PairName=data.UserName;
-        host.wait=false;
+        user_names[data.UserName] = socket.id;
+        socket.UserName = data.UserName;
+        socket.PairName = data.HostName;
+        socket.wait = false;
+        socket.isHost = false;
+        host.PairName = data.UserName;
+        host.Pair = socket;
+        socket.Pair = host;
+        host.wait = false;
 
-        
+
         socket.emit('join_response', protocol.join_response(true));
         console.log(`${socket.UserName} join successed`);
         // 게임을 시작한다.
@@ -69,29 +71,50 @@ socketio.on('connection', function (socket) {
         console.log('game start');
     });
     socket.on('place_done', (msg) => {
-                
+
         socket.isReady = true;
         console.log(`${socket.UserName} is ready`);
 
-        var pair = socketio.sockets.connected[user_names[socket.PairName]];
-        if(pair.isReady){
+        if (socket.Pair.isReady) {
             socket.emit('place_end', protocol.place_end());
-            pair.emit('place_end', protocol.place_end());
-            if(pair.isHost)
-                pair.emit('turn_start', protocol.turn_start());
+            socket.Pair.emit('place_end', protocol.place_end());
+            if (socket.Pair.isHost)
+                socket.Pair.emit('turn_start', protocol.turn_start());
             else
                 socket.emit('turn_start', protocol.turn_start());
             console.log('place end');
         }
-        
+
+    });
+    socket.on('attack_request', (msg) => {
+        socket.Pair.emit('attack_forward', protocol.attack_forward(msg));
+        console.log(`${socket.UserName}'s attack start`);
+    });
+    socket.on('attack_result', (msg) => {
+        socket.Pair.emit('attack_response', protocol.attack_result(msg));
+        console.log(`${socket.PairName}'s attack end`);
+    });
+    socket.on('turn_end', (msg) => {
+        // 게임이 끝났는지 확인한다.
+        let json = JSON.parse(msg);
+        if (json.IsGameOver) {
+            let winner = socket.PairName;
+            socket.Pair.emit('gameover', protocol.gameover(winner));
+            console.log(`The winner is ${winner}`);
+        } else {
+            socket.Pair.emit('turn_start', protocol.turn_start());
+            console.log(`${socket.PairName}'s turn started`);
+        }
+
+        socket.isGameOver = json.IsGameOver;
     });
 
     socket.on('disconnect', function () {
-        if (socket.pairname != undefined) {
-            if (user_names[socket.pairname] != undefined)
-                socketio.sockets.connected[user_names[socket.pairname]].emit('pairmissing', '');
+        if (socket.PairName != undefined) {
+            if (user_names[socket.PairName] != undefined)
+                socketio.sockets.connected[user_names[socket.PairName]].emit('pairmissing', '');
         }
-        delete user_names[socket.username];
+        delete user_names[socket.UserName];
         console.log('disconnect:', socket.id);
     })
 
