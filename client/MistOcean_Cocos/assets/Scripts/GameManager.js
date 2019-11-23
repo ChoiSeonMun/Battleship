@@ -318,7 +318,12 @@ cc.Class({
         });
         cc.Socket.on('gameover', function () {
             console.log('gameover');
+            cc.GameManager.gameEnd(true);
         });
+    },
+    returnlobby(){
+        cc.Socket.disconnect();
+        cc.director.loadScene("Lobby");
     },
     attack_res_handle(res_data) {
         console.log('공격 완료');
@@ -328,9 +333,9 @@ cc.Class({
             var t = data.Tiles.Changed[i];
             cc.GameManager.changeTile(t[0], t[1], data.Tiles.Type[i], false);
         }
-        cc.GameManager.enemyCount[cc.ShipType.Small - 2] = data.ShipCount.Small;
-        cc.GameManager.enemyCount[cc.ShipType.Middle - 2] = data.ShipCount.Middle;
-        cc.GameManager.enemyCount[cc.ShipType.Big - 2] = data.ShipCount.Big;
+        var count=[data.ShipCount.Small,data.ShipCount.Middle,data.ShipCount.Big];
+        cc.GameManager.enemyCount= count;
+        cc.GameManager.battlePanel.getComponent('BattlePanel').setShipCount(count);
     },
     attack_forward_handle(forward_data) {
         console.log(forward_data);
@@ -340,8 +345,10 @@ cc.Class({
         console.log('공격 수신', R, C);
         var res_data = cc.GameManager.DamageStep(R, C);
         cc.Socket.emit('attack_result', JSON.stringify(res_data));
-        if (cc.GameManager.isLose())
+        if (cc.GameManager.isLose()){
             cc.Socket.emit('turn_end', cc.protocol.turn_end(true));
+            cc.GameManager.gameEnd(false);
+        }
         else if (cc.GameManager.tiles[R][C].isShip())
             cc.Socket.emit('turn_end', cc.protocol.turn_end(false));
         else
