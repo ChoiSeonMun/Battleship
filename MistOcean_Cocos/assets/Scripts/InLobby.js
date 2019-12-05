@@ -1,5 +1,8 @@
 var socketio = require('socket.io-client');
-var url = 'http://172.19.86.4:12345';
+cc.settings=require('../Common/settings').settings;
+cc.protocol=require('../Common/protocol').protocol;
+cc.Socket=null;
+var url = cc.settings.getURL();
 cc.Class({
     extends: cc.Component,
 
@@ -82,14 +85,8 @@ cc.Class({
         this.joinPanel.node.active = false;
     },
     okClick: function () {
-        cc.Socket = socketio.connect(url);
-        //socket event
-        cc.Socket.on('host_response',this.host_response_handler);
-        cc.Socket.on("game_start", this.game_start_handler);
-        cc.Socket.on("join_response",this.join_response_handler);
-        cc.Socket.on('pair_missing',function(){
-            cc.Socket.disconnect();
-        });
+        if(cc.Socket!=null&&cc.Socket.connected) return;
+        this.create_socket();
         if (this.isHost) {
             if (this.hostEditBox.string == "") {
                 this.hostErrorLabel.string = "이름을 입력하세요!";
@@ -117,18 +114,27 @@ cc.Class({
             }
         }
     },
-    host_response_handler (Res_data)
+    create_socket(){
+        cc.Socket = socketio.connect(url);
+        cc.Socket.on('host_response',this.host_response_handler);
+        cc.Socket.on("game_start", this.game_start_handler);
+        cc.Socket.on("join_response",this.join_response_handler);
+        cc.Socket.on('pair_missing',this.pair_missing_handler);
+    },
+    host_response_handler (json)
     {
-        console.log('host_response',Res_data);
-        if(!JSON.parse(Res_data).Result)
+        let data=JSON.parse(json);
+        console.log('host_response',data);
+        if(!data.Result)
         {
             cc.Socket.disconnect();
         }
     },
-    join_response_handler (Res_data)
+    join_response_handler (json)
     {
-        console.log('join_response_handler',Res_data);
-        if(!JSON.parse(Res_data).Result)
+        let data=JSON.parse(json);
+        console.log('join_response',data);
+        if(!data.Result)
         {
             cc.Socket.disconnect();
         }
@@ -137,6 +143,9 @@ cc.Class({
     {
         console.log('gamestart');
         cc.director.loadScene("attacktest");
+    },
+    pair_missing_handler(){
+        cc.Socket.disconnect();
     },
     closePanel: function () {
         this.isHost = false;

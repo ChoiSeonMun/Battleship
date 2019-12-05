@@ -1,5 +1,5 @@
 //module import----------------------//
-const protocol = require("../Common/protocol").protocol;
+const protocol = require("../assets/Common/protocol").protocol;
 var io = require('socket.io');
 var http = require('http');
 var express = require('express');
