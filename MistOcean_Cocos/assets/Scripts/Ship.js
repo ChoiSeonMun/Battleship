@@ -8,15 +8,12 @@ var Ship = cc.Class({
 
     // onLoad () {},
     init: function (R, C, type, direc, manager) {
-        this.R = R;
-        this.C = C;
-        this.type = type;
+        this.info=new cc.ShipInfo(R,C,type,direc);
         this.damaged = [];
-        this.direc = direc;
         this.manager = manager;
     },
     isSunken:function(){
-        return this.damaged.length == this.type;
+        return this.damaged.length == this.info.type;
     },
     start() {
 

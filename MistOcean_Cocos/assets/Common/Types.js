@@ -107,3 +107,19 @@ cc.ScreenType = cc.Enum(ScreenType);
 cc.TileType = cc.Enum(TileType);
 cc.ZOrder = cc.Enum(ZOrder);
 cc.AttackEventType = cc.Enum(AttackEventType);
+
+var ShipInfo=function(r,c,type,direc){
+    this.R = r;
+    this.C = c;
+    this.type=type;
+    this.direc=direc;
+}
+
+var ChangedTile=function(r,c,type){
+    this.R=r;
+    this.C=c;
+    this.type=type;
+}
+
+cc.ShipInfo=ShipInfo;
+cc.ChangedTile=ChangedTile;
