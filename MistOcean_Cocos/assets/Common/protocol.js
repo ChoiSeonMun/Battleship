@@ -1,3 +1,6 @@
+//==============================================
+//공통 프로토콜 정의
+//
 const protocol = {
     host_request: function(userName) {
         return JSON.stringify({ UserName: userName });
@@ -66,4 +69,6 @@ const protocol = {
     }
 
 }
+cc.protocol=protocol;
 module.exports.protocol=protocol;
+//==============================================

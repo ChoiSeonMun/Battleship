@@ -1,6 +1,4 @@
 var socketio = require('socket.io-client');
-cc.settings=require('../Common/settings').settings;
-cc.protocol=require('../Common/protocol').protocol;
 cc.Socket=null;
 var url = cc.settings.getURL();
 cc.Class({

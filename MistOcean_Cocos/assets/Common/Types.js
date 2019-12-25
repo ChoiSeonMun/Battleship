@@ -1,6 +1,8 @@
-var EDirec = {
+//==============================================
+//공통 열거형 정의
+//
+const EDirec = {
     default: -1,
-
     RIGHTUP: 1,
     RIGHT: 2,
     RIGHTDOWN: 3,
@@ -53,9 +55,8 @@ var EDirec = {
             return direc - 3;
         return direc + 3;
     }
-};
-
-var ShipType = {
+}
+const ShipType = {
     default: -1,
 
     Small: 2,
@@ -73,12 +74,12 @@ var ShipType = {
         return [2, 3, 4];
     }
 }
-var ScreenType = {
+const ScreenType = {
     default: -1,
     Build: 1,
     Battle: 2
 }
-var TileType = {
+const TileType = {
     default: -1,
     Build: 1,
     Damaged: 2,
@@ -87,14 +88,14 @@ var TileType = {
     Selected: 5,
     Enermy: 6
 }
-var ZOrder = {
+const ZOrder = {
     default: -1,
     Tile: 1,
     Ship: 2,
     Preview: 3,
     Highlight: 4
 }
-var AttackEventType = {
+const AttackEventType = {
     default: -1,
     None: 1,
     Bomb: 2,
@@ -107,19 +108,29 @@ cc.ScreenType = cc.Enum(ScreenType);
 cc.TileType = cc.Enum(TileType);
 cc.ZOrder = cc.Enum(ZOrder);
 cc.AttackEventType = cc.Enum(AttackEventType);
-
-var ShipInfo=function(r,c,type,direc){
+module.exports.EDirec=EDirec;
+module.exports.ShipType=ShipType;
+module.exports.ScreenType=ScreenType;
+module.exports.TileType=TileType;
+module.exports.ZOrder=ZOrder;
+module.exports.AttackEventType=AttackEventType;
+//==============================================
+//공통 객체 정의
+//
+const ShipInfo=function(r,c,type,direc){
     this.R = r;
     this.C = c;
     this.type=type;
     this.direc=direc;
 }
-
-var ChangedTile=function(r,c,type){
+const ChangedTile=function(r,c,type){
     this.R=r;
     this.C=c;
     this.type=type;
 }
-
 cc.ShipInfo=ShipInfo;
 cc.ChangedTile=ChangedTile;
+
+module.exports.ShipInfo=ShipInfo;
+module.exports.ChangedTile=ChangedTile;
+//==============================================
