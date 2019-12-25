@@ -29,15 +29,12 @@ cc.Class({
         this.isHost = false;
         this.isJoin = false;
         this.hostEditBox = this.hostPanel.node.getChildByName("Host").getChildByName("Input EditBox").getComponent(cc.EditBox);
-        this.joinClientEditBox = this.joinPanel.node.getChildByName("Client").getChildByName("Input EditBox").getComponent(cc.EditBox);
-        this.joinHostEditBox = this.joinPanel.node.getChildByName("Host").getChildByName("Input EditBox").getComponent(cc.EditBox);
         this.hostOkButton = this.hostPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
         this.hostOkButton.node.on("click", this.okClick, this);
         this.joinOkButton = this.joinPanel.node.getChildByName("Ok Button").getComponent(cc.Button);
-        this.joinOkButton.node.on("click", this.okClick, this); 
+        this.joinOkButton.node.on("click", this.closePanel, this); 
         console.log(this.hostPanel.node);
         this.hostErrorLabel = this.hostPanel.node.getChildByName("Error Label").getComponent(cc.Label);
-        this.joinErrorLabel = this.joinPanel.node.getChildByName("Error Label").getComponent(cc.Label);
         this.hostPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
         this.joinPanel.node.getChildByName("Close Button").on("click", this.closePanel, this);
         // Main
@@ -47,7 +44,6 @@ cc.Class({
         this.hostPanel.node.active = false;
         this.joinPanel.node.active = false;
         this.hostErrorLabel.string = "";
-        this.joinErrorLabel.string = "";
     },
 
     setHost: function () {
