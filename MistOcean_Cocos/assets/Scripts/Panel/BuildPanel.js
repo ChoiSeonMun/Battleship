@@ -24,8 +24,12 @@ cc.Class({
     },
     onSettingButtonClick: function (event, customEventData) {
         this.GameManager.getComponent("GameManager").shipType = customEventData;
-        console.log(customEventData);
-        this.ModeLabel.string = "배치: " + customEventData + "칸";
+        switch(parseInt(customEventData)){
+            case 2: this.ModeLabel.string="소형";break;
+            case 3: this.ModeLabel.string="중형";break;
+            case 4: this.ModeLabel.string="대형";break;
+            default: break;
+        }
     },
     onDeleteButtonClick: function (event) {
         var manager = this.GameManager.getComponent("GameManager");
@@ -33,7 +37,6 @@ cc.Class({
             manager.deleteTargetShip();
     },
     onStartButtonClick: function () {
-        this.ModeLabel.string = "";
         this.GameManager.getComponent("GameManager").buildComplete();
     },
 });

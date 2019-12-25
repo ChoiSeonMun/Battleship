@@ -62,17 +62,29 @@ cc.Class({
         winText: {
             default: null,
             type: cc.Label
+        },
+        logBox:{
+            default:null,
+            type:cc.ScrollView
         }
     },
-
+    log(sender,msg){
+        let d=new Date();
+        let timestamp="["+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds()+"] ";
+        let logbox=this.logBox.node.children[1].children[0];
+        let logs=logbox.children[0]._components[0];
+        let log=timestamp+sender+" : "+msg+"\n";
+        logs.string=log+logs.string;
+        logbox.height=logs.node.height+160;
+    },
     // LIFE-CYCLE CALLBACKS:
-
     onLoad: function () {
         cc.GameManager = this;
         this.declareVariable();
         this.enableBuildEvents();
         this.setShipPrefabs();
         this.spawnBuildTiles();
+        this.log("ASDFWERAWSDFASDFWasdfsfsdfERWAERASDF","QQWEEWQQWQWQWEQWEsadfasdfasdfsdfsdQWEQWEQW.");
     },
     enableBuildEvents: function () {
         var target = this.tileContainer[cc.ScreenType.Build - 1];
@@ -114,7 +126,7 @@ cc.Class({
         this.isMyTurn = true;                       //type:bool, 현재 나의 차례인가?
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);            //type:Number, 다음 타일과의 X축 거리
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);    //type:Number, 다음 타일과의 Y축 거리
-        cc.Socket.on('place_end', this.place_end_handle);
+        //cc.Socket.on('place_end', this.place_end_handle);
     },
     place_end_handle() {
         console.log('place_end');
@@ -272,6 +284,7 @@ cc.Class({
         this.deselectTile();
     },
     buildComplete: function () {                        //배치가 완료되면 build event를 비활성화하고 대기
+        this.log("System","FuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUck");
         if (!this.isLose()) {
             console.log("배치가 끝나지 않음");
             return;
@@ -283,7 +296,8 @@ cc.Class({
         this.disableBuildEvents();
         this.buildCompleted = true;
         console.log("배치 완료");
-        cc.Socket.emit('place_done', cc.protocol.place_done());
+        //cc.Socket.emit('place_done', cc.protocol.place_done());
+        this.changeBattlePhase();//
     },
     assignItems: function () {                          //아이템 랜덤 배치
         console.log("폭탄 배치");
@@ -310,16 +324,16 @@ cc.Class({
         this.shipCount = [2, 2, 1];
         this.enableBattleEvents();
         this.spawnEnermyTiles();
-        cc.Socket.on('attack_response', this.attack_res_handle);         //공격 후 판정
-        cc.Socket.on('attack_forward', this.attack_forward_handle);      //공격 받을 때
-        cc.Socket.on('turn_start', function () {
-            console.log('turn start');
-            cc.GameManager.isMyTurn = true;
-        });
-        cc.Socket.on('gameover', function () {
-            console.log('gameover');
-            cc.GameManager.gameEnd(true);
-        });
+        //cc.Socket.on('attack_response', this.attack_res_handle);         //공격 후 판정
+        //cc.Socket.on('attack_forward', this.attack_forward_handle);      //공격 받을 때
+        //cc.Socket.on('turn_start', function () {
+        //    console.log('turn start');
+        //    cc.GameManager.isMyTurn = true;
+        //});
+        //cc.Socket.on('gameover', function () {
+        //    console.log('gameover');
+        //    cc.GameManager.gameEnd(true);
+        //});
     },
     returnlobby(){
         cc.Socket.disconnect();
@@ -363,13 +377,13 @@ cc.Class({
         switch (this.currentScreen) {
             case cc.ScreenType.Build:
                 this.currentScreen = cc.ScreenType.Battle;
-                this.tileContainer[cc.ScreenType.Build - 1].setPosition(-884, 0, 0);
-                this.tileContainer[cc.ScreenType.Battle - 1].setPosition(0, 0, 0);
+                this.tileContainer[cc.ScreenType.Build - 1].x=-884;
+                this.tileContainer[cc.ScreenType.Battle - 1].x=0;
                 break;
             case cc.ScreenType.Battle:
                 this.currentScreen = cc.ScreenType.Build;
-                this.tileContainer[cc.ScreenType.Build - 1].setPosition(0, 0, 0);
-                this.tileContainer[cc.ScreenType.Battle - 1].setPosition(884, 0, 0);
+                this.tileContainer[cc.ScreenType.Build - 1].x=0;
+                this.tileContainer[cc.ScreenType.Battle - 1].x=884;
                 break;
             default: break;
         }
