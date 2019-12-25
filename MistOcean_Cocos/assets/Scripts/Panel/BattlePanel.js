@@ -24,7 +24,7 @@ cc.Class({
             this.ShipCountLabel[i].string = value[i];
     },
     setTurn: function (turn) {
-        var text = turn ? "내 차례" : "상대 차례";
+        var text = turn ? "당신의 차례입니다." : "상대의 차례입니다.";
         this.TurnLabel.string = text;
     },
     onChangeButtonClick: function () {
