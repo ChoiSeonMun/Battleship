@@ -62,17 +62,28 @@ cc.Class({
         winText: {
             default: null,
             type: cc.Label
+        },
+        logBox:{
+            default:null,
+            type:cc.ScrollView
         }
     },
-
+    log(sender,msg){
+        let d=new Date();
+        let timestamp="["+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds()+"] ";
+        let logbox=this.logBox.node.children[1].children[0];
+        let logs=logbox.children[0]._components[0];
+        logs.string=timestamp+sender+" : "+msg+"\n"+logs.string;
+        logbox.height+=40;
+    },
     // LIFE-CYCLE CALLBACKS:
-
     onLoad: function () {
         cc.GameManager = this;
         this.declareVariable();
         this.enableBuildEvents();
         this.setShipPrefabs();
         this.spawnBuildTiles();
+        this.log("System","게임이 시작되었습니다.");
     },
     enableBuildEvents: function () {
         var target = this.tileContainer[cc.ScreenType.Build - 1];
@@ -114,7 +125,7 @@ cc.Class({
         this.isMyTurn = true;                       //type:bool, 현재 나의 차례인가?
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);            //type:Number, 다음 타일과의 X축 거리
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);    //type:Number, 다음 타일과의 Y축 거리
-        cc.Socket.on('place_end', this.place_end_handle);
+        //cc.Socket.on('place_end', this.place_end_handle);
     },
     place_end_handle() {
         console.log('place_end');

@@ -34,13 +34,13 @@
     "Tile",
     "Ship"
   ],
-  "last-module-event-record-time": 1573992690956,
+  "last-module-event-record-time": 1577248402248,
   "simulator-orientation": false,
   "simulator-resolution": {
     "height": 1444,
     "width": 884
   },
-  "start-scene": "aa3a6f0c-9576-4368-b60e-87015f697fbc",
+  "start-scene": "ea8222fc-6b07-4743-a2a1-cfb83271b318",
   "use-customize-simulator": true,
   "use-project-simulator-setting": true
 }
