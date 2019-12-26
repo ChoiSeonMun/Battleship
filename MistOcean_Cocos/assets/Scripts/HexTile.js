@@ -1,22 +1,18 @@
-cc.Class({
+cc.HexTile=cc.Class({
     extends: cc.Component,
 
-    properties: {
-    },
-    // LIFE-CYCLE CALLBACKS:
-    onLoad () {
-    },
-    start() {
-    },
-    init:function(R,C,type,manager){
+    init:function(R,C,type){
         this.R=R;
         this.C=C;
         this.type=type;
-        this.manager=manager;
         this.ship=null;
+        this.node.zIndex=cc.ZOrder.Tile;
+        this.node.setPosition(cc.GameManager.getTilePos(R, C));
         this.setEvent();
     },
-    // update (dt) {},
+    getPos(){
+        return this.node.position;
+    },
     setEvent:function(){
         this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
         this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
@@ -41,15 +37,13 @@ cc.Class({
     isBuild:function(){
         return this.type==cc.TileType.Build;
     },
+
     onTouchStart:function(event){
     },
-
     onTouchCancel:function(event){
     },
-
     onTouchMove:function(event){
     },
-
     onTouchEnd:function(event){
     },
 });

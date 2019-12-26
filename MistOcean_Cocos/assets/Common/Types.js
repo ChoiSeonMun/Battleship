@@ -63,12 +63,12 @@ const ShipType = {
     Middle: 3,
     Big: 4,
     toString: function (type) {
-        switch (type) {
-            case this.Small: return "Small";
-            case this.Middle: return "Middle";
-            case this.Big: return "Big";
-            default: return "Default";
+        switch (parseInt(type)) {
+            case this.Small: return "소형";
+            case this.Middle: return "중형";
+            case this.Big: return "대형";
         }
+        return "";
     },
     getAllTypes: function () {
         return [2, 3, 4];

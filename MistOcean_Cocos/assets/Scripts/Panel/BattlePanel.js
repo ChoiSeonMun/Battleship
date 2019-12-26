@@ -1,11 +1,7 @@
-cc.Class({
+cc.BattlePanel=cc.Class({
     extends: cc.Component,
 
     properties: {
-        GameManager: {
-            default: null,
-            type: cc.Node
-        },
         ShipCountLabel: {
             default: [],
             type: [cc.Label],
@@ -28,13 +24,13 @@ cc.Class({
         this.TurnLabel.string = text;
     },
     onChangeButtonClick: function () {
-        this.GameManager.getComponent("GameManager").changeContainer();
+        cc.GameManager.changeContainer();
         this.FieldLabel.string = (this.FieldLabel.string == "상대 필드") ? "내 필드" : "상대 필드";
     },
     onAttackButtonClick: function () {
-        this.GameManager.getComponent("GameManager").attackTarget();
+        cc.GameManager.attackTarget();
     },
     onTest: function () {
-        this.GameManager.getComponent("GameManager").isMyTurn = true;
+        cc.GameManager.isMyTurn = true;
     },
 });
