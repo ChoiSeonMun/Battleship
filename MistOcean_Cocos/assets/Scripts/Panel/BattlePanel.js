@@ -30,7 +30,4 @@ cc.BattlePanel=cc.Class({
     onAttackButtonClick: function () {
         cc.GameManager.attackTarget();
     },
-    onTest: function () {
-        cc.GameManager.isMyTurn = true;
-    },
 });

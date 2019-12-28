@@ -41,6 +41,10 @@ cc.Class({
             type: cc.Prefab,
         },
     },
+    //----------------------------------------//
+    //game utility
+    //
+    //show message in console box
     log(msg,sender="System") {
         let d = new Date();
         let timestamp = "[" + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "] ";
@@ -50,25 +54,30 @@ cc.Class({
         logs.string = log + logs.string;
         logbox.height = logs.node.height + 160;
     },
-    getTilePos(R, C) {                       //R,C 타일의 position 반환
+    //get client size of tile on (R,C)
+    getTilePos(R, C) {
         let x = parseInt(C * this.DX / 2 + this.DX / 2) + this.tileMargin.x;
         let y = parseInt(R * this.DY + this.DY / 1.5) + this.tileMargin.y;
         return cc.v2(x, y);
     },
-    toClientPos(pos) {                   //R,C 타일의 실제 pos를 반환
+    //get client size of point
+    toClientPos(pos) {
         let view = this.tileContainer[0].parent;
         let body = view.parent;
         pos.y -= body.y + view.y - view.height / 2;
         return pos;
     },
-    getDirect(origin, forward) {             //v2 to v2의 방향을 계산
+    //get EDirec of origin to forward vector
+    getDirect(origin, forward) {
         let angle = Math.atan2(forward.y - origin.y, forward.x - origin.x) * 180 / Math.PI;
         return cc.EDirec.getDirec(angle);
     },
-    inRange(R, C) {                          //위치 유효성 검사
+    //get whether (R,C) in valid range
+    inRange(R, C) {
         return R >= 0 && C >= 0 && R < this.height && C < this.width * 2 + R % 2 - 1;
     },
-    isValidTile(R, C) {                      //타일의 유효성 검사
+    //get whether mytile of (R,C) is blank ,isolation and in range
+    isValidTile(R, C) {
         if (!this.inRange(R, C) || this.myTiles[R][C].ship != null)   // 위치가 유효하지 않으면 false
             return false;
         for (let v of cc.EDirec.getAllDirec())
@@ -76,7 +85,8 @@ cc.Class({
                 return false;
         return true;
     },
-    isValidShip(R, C, type, direc) {         //배의 유효성 검사
+    //get whether each tiles under ship is valid
+    isValidShip(R, C, type, direc) {
         let step = cc.EDirec.getVector(direc);
         for (let i = 0; i < type; ++i) {
             if (!this.isValidTile(R + step.y * i, C + step.x * i))
@@ -84,32 +94,70 @@ cc.Class({
         }
         return true;
     },
+    //get wehther all ships are placed
     allPlace() {                              
         return this.shipCount[0] + this.shipCount[1] + this.shipCount[2] == 0;
     },
+    //change mytile or enermytile of (R,C) to 'type' tile
+    changeTile(R, C, type, mytile = true) {
+        let tiles = mytile ? this.myTiles : this.enermyTiles;
+        if (tiles[R][C] != null)
+            tiles[R][C].destroy();
+        let screenIndex = mytile ? cc.ScreenType.Build - 1 : cc.ScreenType.Battle - 1;
+        let tilePrefab = this.hexTilePrefabs[type - 1];
+        let tile = cc.instantiate(tilePrefab).getComponent("HexTile");
+        this.tileContainer[screenIndex].addChild(tile.node);
+        tile.init(R, C, type);
+        tiles[R][C] = tile;
 
+    },
+    //swap tile container
+    changeContainer() {
+        switch (this.currentScreen) {
+            case cc.ScreenType.Build:
+                this.currentScreen = cc.ScreenType.Battle;
+                this.tileContainer[cc.ScreenType.Build - 1].x=-884;
+                this.tileContainer[cc.ScreenType.Battle - 1].x=0;
+                break;
+            case cc.ScreenType.Battle:
+                this.currentScreen = cc.ScreenType.Build;
+                this.tileContainer[cc.ScreenType.Build - 1].x=0;
+                this.tileContainer[cc.ScreenType.Battle - 1].x=884;
+                break;
+            default: break;
+        }
+    },
+    //----------------------------------------//
+    //game event handler
+    //
+    //event when first tile clicked
     onTouchStart(event) {
         let hex = event.target.getComponent("HexTile");
         if (hex != null)
             cc.GameManager.selectTile(hex);
     },
+    //event when tile drag after click
     onTouchMove(event) {
         if (cc.GameManager.shipPreview == null)
             return;
         cc.GameManager.updateCursorDirec(event.touch.getLocation());
     },
+    //event when click end in outside of tile
     onTouchCancel(event) {
         if (cc.GameManager.shipPreview == null)
             return;
         cc.GameManager.spawnShip();
         cc.GameManager.coverShipPreview();
     },
+    //event when click end in inside of tile
     onTouchEnd(event) {
         if (cc.GameManager.shipPreview == null)
             return;
         cc.GameManager.coverShipPreview();
     },
-
+    //----------------------------------------//
+    //game logic
+    //
     onLoad() {
         cc.GameManager = this;
         this.declareVariable();
@@ -117,23 +165,28 @@ cc.Class({
         this.setShipPrefabs();
         this.initTiles();
         this.log("게임이 시작되었습니다.");
+        cc.Socket.on("enermy_ready",this.enermy_ready_handler);
     },
+    //initialize variable used by game logic
     declareVariable() {
         let tile = this.hexTilePrefabs[0].data;
-        this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);            //type:Number, 다음 타일과의 X축 거리
-        this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);    //type:Number, 다음 타일과의 Y축 거리
-        this.shipPrefabs = [];                      //type:[cc.Node], index:ShipType -2, ship 원형들이 저장
-        this.ShipPreviewPrefabs = [];               //type:[cc.Node], index:ShipType -2, ship preview 원형들이 저장
+        this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);           
+        this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);   
+        this.shipPrefabs = [];                     
+        this.ShipPreviewPrefabs = [];            
         this.myTiles = [];
         this.enermyTiles = [];
         this.shipInfos = [];
-        this.target = null;                         //type:HexTile, 현재 선택된 타일이 저장
-        this.highlight = null;                      //type:cc.Node, 현재 화면에 표시된 highlight가 저장
-        this.shipPreview = null;                    //type:cc.Node, 현재 화면에 표시된 ship preview가 저장
-        this.currentScreen = cc.ScreenType.Build;   //type:cc.ScreenType, 현재 표시하고있는 화면의 종류를 저장
-        this.shipType = cc.ShipType.Small;          //type:cc.ShipType, 선택된 배의 종류가 저장
-        this.cursorDirec = cc.EDirec.default;       //type:cc.EDirec, 선택된 타일과 커서의 방향을 저장
+        this.target = null;                      
+        this.highlight = null;                   
+        this.shipPreview = null;                 
+        this.currentScreen = cc.ScreenType.Build;
+        this.shipType = cc.ShipType.Small;       
+        this.cursorDirec = cc.EDirec.default;    
+        this.ready=false;
+        this.turn=false;
     },
+    //enable tile events at mytile
     enableBuildEvents() {
         let target = this.tileContainer[cc.ScreenType.Build - 1];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
@@ -141,7 +194,8 @@ cc.Class({
         target.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
         target.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, target);
     },
-    setShipPrefabs() {                       //모든 종류 배의 prefab과 preview생성
+    //create all types ship and preview prefabs
+    setShipPrefabs() {
         for (let t of cc.ShipType.getAllTypes()) {
             let s = new cc.Node("ShipPrefab" + cc.ShipType.toString(t));
             s.addComponent("Ship");
@@ -159,7 +213,8 @@ cc.Class({
             this.ShipPreviewPrefabs[t - 2] = sp;
         }
     },
-    initTiles() {                      //width x hegiht 갯수만큼 build타일 생성
+    //initialize mytile and enermytile
+    initTiles() {
         for (let r = 0; r < this.height; ++r) {
             this.myTiles[r] = [];
             this.enermyTiles[r] = [];
@@ -169,25 +224,14 @@ cc.Class({
             }
         }
     },
-    changeTile(R, C, type, mytile = true) {
-        let tiles = mytile ? this.myTiles : this.enermyTiles;
-        if (tiles[R][C] != null)
-            tiles[R][C].destroy();
-        let screenIndex = mytile ? cc.ScreenType.Build - 1 : cc.ScreenType.Battle - 1;
-        let tilePrefab = this.hexTilePrefabs[type - 1];
-        let tile = cc.instantiate(tilePrefab).getComponent("HexTile");
-        this.tileContainer[screenIndex].addChild(tile.node);
-        tile.init(R, C, type);
-        tiles[R][C] = tile;
-
-    },
-    selectTile(hex) {                        //target을 지정하고 highlight와 preview 생성
-        this.target = hex;
+    //select tile and show preview if place phase
+    selectTile(tile) {
+        this.target = tile;
         this.showTileHighlight();
         if (this.currentScreen == cc.ScreenType.Build)
             this.showShipPreview();
     },
-    showTileHighlight() {                  //현재 화면 R,C위치에 highlight 생성
+    showTileHighlight() {
         if (this.highlight == null) {
             this.highlight = cc.instantiate(this.TileHighlightPrefab);
             this.highlight.zIndex = cc.ZOrder.Highlight;
@@ -195,7 +239,7 @@ cc.Class({
         }
         this.highlight.setPosition(this.target.getPos());
     },
-    showShipPreview() {                      //ship preview 표시
+    showShipPreview() {
         let R = this.target.R;
         let C = this.target.C;
         let shipIndex = this.shipType - 2;
@@ -206,18 +250,20 @@ cc.Class({
         this.shipPreview.setPosition(this.target.getPos());
         this.tileContainer[cc.ScreenType.Build - 1].addChild(this.shipPreview);
     },
-    updateCursorDirec(cursorpos) {             //커서방향 갱신
+    //redirect ship for the cursor
+    updateCursorDirec(cursorpos) {
         let origin = this.target.getPos();
         let forward = this.toClientPos(cursorpos);
         this.cursorDirec = this.getDirect(origin, forward);
         this.shipPreview.angle = cc.EDirec.getAngle(this.cursorDirec);
     },
-    coverShipPreview() {                     //ship preview 제거
+    coverShipPreview() {
         if (this.shipPreview != null)
             this.shipPreview.destroy();
         this.shipPreview = null;
     },
-    spawnShip() {                            //target위치 cursor 방향에 배 생성
+    //spawn ship on target position
+    spawnShip() {
         let R = this.target.R;
         let C = this.target.C;
         let direc = this.cursorDirec;
@@ -240,13 +286,13 @@ cc.Class({
             this.myTiles[R + step.y * i][C + step.x * i].ship = ship;
         this.deselectTile();
     },
-    deselectTile() {                         //target 해제
+    deselectTile() {
         if (this.highlight != null)
             this.highlight.destroy();
         this.highlight = null;
         this.target = null;
     },
-    deleteTargetShip() {                     //target 위의 ship 제거
+    deleteTargetShip() {
         let ship = this.target.ship;
         let shipIndex=ship.info.type-2;
         let step = cc.EDirec.getVector(ship.info.direc);
@@ -258,15 +304,23 @@ cc.Class({
         ship.node.destroy();
         this.deselectTile();
     },
-    buildComplete() {                        //배치가 완료되면 build event를 비활성화하고 대기
+    //send 'place_done' to server and disable build events
+    buildComplete() {
         if (!this.allPlace()) {
-            this.log("배치가 완료되지 않았습니다.");
+            this.log("배치가 완료해주세요.");
             return;
         }
-        this.log("배치가 완료되었습니다.");
+        if(this.ready){
+            this.log("이미 준비했습니다.");
+            return;
+        }
+        this.ready=true;
+        cc.Socket.on('place_response',this.place_response_handler);
+        cc.Socket.on('start_event',this.start_event_handler);
+        cc.Socket.on('turn_start',this.turn_start_handler);
+        cc.Socket.emit('place_done',cc.protocol.place_done(this.shipInfos));
         this.deselectTile();
         this.disableBuildEvents();
-        this.changeBattlePhase();
     },
     disableBuildEvents() {
         let target = this.tileContainer[cc.ScreenType.Build - 1];
@@ -275,7 +329,13 @@ cc.Class({
         target.off(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
         target.off(cc.Node.EventType.TOUCH_END, this.onTouchEnd, target);
     },
-    changeBattlePhase() {                    //battle phase로 전환
+    //set bomb in mytiles
+    setBomb(bombpos){
+        this.log("폭탄이 설치되었습니다.");
+        this.changeTile(bombpos.R, bombpos.C, cc.TileType.Bomb);
+
+    },
+    changeBattlePhase() {
         this.log("전투가 시작됩니다.");
         this.buildPanel.node.setPosition(cc.v2(-884, 0));
         this.battlePanel.node.setPosition(cc.v2(0, 0));
@@ -291,20 +351,46 @@ cc.Class({
         let target = this.tileContainer[cc.ScreenType.Battle - 1];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
-    changeContainer() {                      //표시되는 화면 변경
-        this.log("화면을 전환합니다.");
-        switch (this.currentScreen) {
-            case cc.ScreenType.Build:
-                this.currentScreen = cc.ScreenType.Battle;
-                this.tileContainer[cc.ScreenType.Build - 1].x=-884;
-                this.tileContainer[cc.ScreenType.Battle - 1].x=0;
-                break;
-            case cc.ScreenType.Battle:
-                this.currentScreen = cc.ScreenType.Build;
-                this.tileContainer[cc.ScreenType.Build - 1].x=0;
-                this.tileContainer[cc.ScreenType.Battle - 1].x=884;
-                break;
-            default: break;
-        }
+    turnStart(){
+        this.log("당신의 차례입니다.");
+        this.turn=true;
+        this.battlePanel.setTurn(true);
     },
+    attackTarget(){
+        if(!this.turn){
+            this.log("당신의 차례가 아닙니다.");
+            return;
+        }
+        this.log("공격!");
+        this.turn=false;
+        this.battlePanel.setTurn(false);
+        cc.Socket.on('attack_response',this.attack_response_handler);
+        cc.Socket.emit('attack_request',cc.protocol.attack_request(0,0));
+    },
+    //----------------------------------------//
+    //server event handler
+    //
+    place_response_handler(json){
+        cc.GameManager.setBomb(JSON.parse(json));
+        cc.Socket.off("place_response",cc.GameManager.place_response_handler);
+    },
+    enermy_ready_handler(){
+        cc.GameManager.log("상대가 배치를 완료했습니다.");
+        cc.Socket.off("enermy_ready",cc.GameManager.enermy_ready_handler);
+    },
+    start_event_handler(){
+        cc.GameManager.changeBattlePhase();
+        cc.Socket.off("start_event",cc.GameManager.start_event_handler);
+    },
+    turn_start_handler(){
+        cc.GameManager.turnStart();
+    },
+    attack_response_handler(json){
+        cc.GameManager.log('test');
+        cc.Socket.off('attack_response',cc.GameManager.attack_response_handler);
+        
+    },
+    update_event_handler(json){
+    },
+    //----------------------------------------//
 })

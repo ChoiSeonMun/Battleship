@@ -1,5 +1,5 @@
 //==============================================
-//공통 열거형 정의
+//comon enum define
 //
 const EDirec = {
     default: -1,
@@ -95,6 +95,12 @@ const ZOrder = {
     Preview: 3,
     Highlight: 4
 }
+const JoinEventType={
+    default: -1,
+    Wait: 1,
+    Start:2,
+    Failure:3
+}
 const AttackEventType = {
     default: -1,
     None: 1,
@@ -102,20 +108,15 @@ const AttackEventType = {
     Ship: 3,
     SunkenShip: 4
 }
-cc.EDirec = cc.Enum(EDirec);
-cc.ShipType = cc.Enum(ShipType);
-cc.ScreenType = cc.Enum(ScreenType);
-cc.TileType = cc.Enum(TileType);
-cc.ZOrder = cc.Enum(ZOrder);
-cc.AttackEventType = cc.Enum(AttackEventType);
 module.exports.EDirec=EDirec;
 module.exports.ShipType=ShipType;
 module.exports.ScreenType=ScreenType;
 module.exports.TileType=TileType;
 module.exports.ZOrder=ZOrder;
+module.exports.JoinEventType=JoinEventType;
 module.exports.AttackEventType=AttackEventType;
 //==============================================
-//공통 객체 정의
+//common object type define
 //
 const ShipInfo=function(r,c,type,direc){
     this.R = r;
@@ -128,8 +129,6 @@ const ChangedTile=function(r,c,type){
     this.C=c;
     this.type=type;
 }
-cc.ShipInfo=ShipInfo;
-cc.ChangedTile=ChangedTile;
 
 module.exports.ShipInfo=ShipInfo;
 module.exports.ChangedTile=ChangedTile;

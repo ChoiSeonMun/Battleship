@@ -8,16 +8,10 @@ cc.HexTile=cc.Class({
         this.ship=null;
         this.node.zIndex=cc.ZOrder.Tile;
         this.node.setPosition(cc.GameManager.getTilePos(R, C));
-        this.setEvent();
+        this.setEvents();
     },
     getPos(){
         return this.node.position;
-    },
-    setEvent:function(){
-        this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
-        this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
-        this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
-        this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
     },
     isShip: function () {
         return this.ship != null;
@@ -38,6 +32,12 @@ cc.HexTile=cc.Class({
         return this.type==cc.TileType.Build;
     },
 
+    setEvents:function(){
+        this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
+        this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
+        this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
+        this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
+    },
     onTouchStart:function(event){
     },
     onTouchCancel:function(event){

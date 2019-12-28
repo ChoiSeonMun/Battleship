@@ -19,8 +19,9 @@ cc.BuildPanel=cc.Class({
         this.ShipCountLabel[index].string = cnt;
     },
     onSettingButtonClick: function (event, customEventData) {
-        cc.GameManager.shipType = customEventData;
-        this.ModeLabel.string=cc.ShipType.toString(parseInt(customEventData));
+        let type= parseInt(customEventData);
+        cc.GameManager.shipType = type;
+        this.ModeLabel.string=cc.ShipType.toString(type);
     },
     onDeleteButtonClick: function (event) {
         var manager = cc.GameManager;

@@ -1,74 +1,41 @@
 //==============================================
-//공통 프로토콜 정의
+//common protocol define
 //
 const protocol = {
-    host_request: function(userName) {
-        return JSON.stringify({ UserName: userName });
+    //==============================================
+    //lobby protocol
+    //
+    join_request(nickname) {//client
+        return JSON.stringify({ nickname: nickname});
     },
-
-    host_response: function(result) {
-        return JSON.stringify({ Result: result});
+    join_response(type,info="") {//server
+        return JSON.stringify({ type:type,info:info });
     },
-
-    join_request: function(userName, hostName) {
-        return JSON.stringify({ UserName: userName, HostName: hostName });
+    //==============================================
+    //place protocol
+    //
+    place_done(shipinfos) {//client
+        return JSON.stringify(shipinfos);
     },
-
-    join_response: function(result) {
-        return JSON.stringify({ Result: result });
+    place_response(R,C) {//server
+        return JSON.stringify({R:R,C:C});
     },
-
-    game_start: function() {
-        return "";
+    enermy_ready(){},//server
+    start_event(){},//server
+    //==============================================
+    //battle protocol
+    //
+    turn_start(){},//server    
+    attack_request(R,C) {//client
+        return JSON.stringify({R:R,C:C});
     },
-
-    attack_request: function(pos) {
-        return JSON.stringify( { Position: pos });
+    attack_response(msg) {//server
     },
+    update_event(){//server
 
-    attack_forward: function(pos) {
-        return pos;
-    },
-
-    attack_result: function(changedTile, tileType, bigShip, middleShip, smallShip) {
-        return JSON.stringify({
-            Tiles: {
-                Changed: changedTile,
-                Type: tileType
-            },
-            ShipCount: {
-                Big: bigShip,
-                Middle: middleShip,
-                Small: smallShip
-            }
-        });
-    },
-
-    attack_response: function(msg) {
-        return msg;
-    },
-
-    turn_end: function(isGameOver) {
-        return JSON.stringify({ IsGameOver: isGameOver });
-    },
-
-    turn_start: function() {
-        return "";
-    },
-
-    gameover: function(winner) {
-        return JSON.stringify({ Winner: winner });
-    },
-
-    place_done: function() {
-        return "";
-    },
-
-    place_end: function() {
-        return "";
     }
+    //==============================================
 
 }
-cc.protocol=protocol;
 module.exports.protocol=protocol;
 //==============================================

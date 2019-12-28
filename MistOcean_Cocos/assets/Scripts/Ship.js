@@ -15,7 +15,4 @@ var Ship = cc.Class({
     isSunken:function(){
         return this.damaged.length == this.info.type;
     },
-    start() {
-
-    },
 });
