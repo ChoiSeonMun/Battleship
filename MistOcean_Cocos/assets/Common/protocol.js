@@ -25,13 +25,13 @@ const protocol = {
     //==============================================
     //battle protocol
     //
-    turn_start(){},//server    
+    turn_event(){},//server    
     attack_request(R,C) {//client
         return JSON.stringify({R:R,C:C});
     },
     attack_response(msg) {//server
     },
-    update_event(){//server
+    attack_event(){//server
 
     }
     //==============================================

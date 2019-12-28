@@ -317,7 +317,8 @@ cc.Class({
         this.ready=true;
         cc.Socket.on('place_response',this.place_response_handler);
         cc.Socket.on('start_event',this.start_event_handler);
-        cc.Socket.on('turn_start',this.turn_start_handler);
+        cc.Socket.on('turn_event',this.turn_event_handler);
+        cc.Socket.on('attack_event',this.attack_event_handler);
         cc.Socket.emit('place_done',cc.protocol.place_done(this.shipInfos));
         this.deselectTile();
         this.disableBuildEvents();
@@ -342,6 +343,7 @@ cc.Class({
         this.changeContainer();
         this.shipCount = [2, 2, 1];
         this.enableBattleEvents();
+        this.battlePanel.setTurn(false);
     },
     enableBattleEvents() {
         let target = this.tileContainer[cc.ScreenType.Battle - 1];
@@ -382,7 +384,7 @@ cc.Class({
         cc.GameManager.changeBattlePhase();
         cc.Socket.off("start_event",cc.GameManager.start_event_handler);
     },
-    turn_start_handler(){
+    turn_event_handler(){
         cc.GameManager.turnStart();
     },
     attack_response_handler(json){
@@ -390,7 +392,8 @@ cc.Class({
         cc.Socket.off('attack_response',cc.GameManager.attack_response_handler);
         
     },
-    update_event_handler(json){
+    attack_event_handler(json){
+        cc.GameManager.log('대충 공격받음');
     },
     //----------------------------------------//
 })
