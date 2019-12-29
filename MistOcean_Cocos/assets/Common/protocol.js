@@ -29,10 +29,14 @@ const protocol = {
     attack_request(R,C) {//client
         return JSON.stringify({R:R,C:C});
     },
-    attack_response(msg) {//server
+    attack_response(type,remain_enermy,changed_tiles) {//server
+        return JSON.stringify({type:type,remain_enermy:remain_enermy,changed_tiles:changed_tiles});
     },
-    attack_event(){//server
-
+    attack_event(type,remain_ship,changed_tiles){//server
+        return JSON.stringify({type:type,remain_ship:remain_ship,changed_tiles:changed_tiles});
+    },
+    game_over(winner){//server
+        return JSON.stringify({winner:winner});
     }
     //==============================================
 

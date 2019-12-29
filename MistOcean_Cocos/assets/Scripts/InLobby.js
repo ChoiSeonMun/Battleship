@@ -123,7 +123,7 @@ cc.Class({
         cc.enermyName=enermyname;
         cc.Socket.off('join_response',this.join_response_handler);
         cc.Socket.on('pair_missing',this.pair_missing_handler);
-        cc.director.loadScene("GameScene(protocol)");
+        cc.director.loadScene("GameScene");
     },
     joinFailure(msg){
         switch(msg){
