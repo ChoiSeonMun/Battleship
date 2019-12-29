@@ -1,5 +1,6 @@
 //module import----------------------//
 const protocol = require("../assets/Common/protocol").protocol;
+const types=require("../assets/Common/types");
 var io = require('socket.io');
 var http = require('http');
 var express = require('express');
@@ -13,108 +14,83 @@ var server = http.createServer(app).listen(app.get('port'), function () {
     console.log('express start:', app.get('port'));
 });
 var socketio = io.listen(server);
+var findById=function(id){ 
+    return socketio.sockets.connected[id];
+}
 console.log('socket start');
 //-----------------------------------//
 //declare variable-------------------//
-var user_names = {};
+var users = {};
+var wait_queue=[];
 //-----------------------------------//
 //event handler----------------------//
 socketio.on('connection', function (socket) {
     console.log('connect:', socket.id);
 
-    socket.on('host_request', (msg) => {
-        // 메시지를 파싱한다.
-        let data = JSON.parse(msg);
-
-        if (user_names[data.UserName] != undefined) {
-            socket.emit('host_response', protocol.host_response(false));
-            console.log(`${data.UserName} host failed`);
-            return;
-        }
-
-        user_names[data.UserName] = socket.id;
-        socket.UserName = data.UserName;
-        socket.Wait = true;
-        socket.isHost = true;
-        socket.emit('host_response', protocol.host_response(true));
-        console.log(`${socket.UserName} host successed`);
-    });
-
-    // 조인
     socket.on('join_request', (msg) => {
-        // 데이터를 분석한다.
-        let data = JSON.parse(msg);
-        var hostid = user_names[data.HostName];
-        var host = hostid === undefined ? null : socketio.sockets.connected[hostid];
-        if (user_names[data.UserName] !== undefined
-            || host == null || !host.Wait) {
-            socket.emit('join_response', protocol.join_response(false));
-            console.log(`${data.UserName} join failed`);
+        let nickname = JSON.parse(msg).nickname;
+        console.log(`${nickname} join request`);
+
+        if (users[nickname] != undefined) {
+            socket.emit('join_response', protocol.join_response(types.JoinEventType.Failure,"duplicate"));
+            console.log(`${nickname} is Duplicate`);
             return;
         }
-        user_names[data.UserName] = socket.id;
-        socket.UserName = data.UserName;
-        socket.PairName = data.HostName;
-        socket.wait = false;
-        socket.isHost = false;
-        host.PairName = data.UserName;
-        host.Pair = socket;
-        socket.Pair = host;
-        host.wait = false;
 
+        users[nickname] = socket.id;
+        socket.nickname = nickname;
+        socket.ready=false;
 
-        socket.emit('join_response', protocol.join_response(true));
-        console.log(`${socket.UserName} join successed`);
-        // 게임을 시작한다.
-        socket.emit('game_start', protocol.game_start());
-        host.emit('game_start', protocol.game_start());
-        console.log('game start');
+        if(wait_queue.length!=0){
+            let pairId=wait_queue.shift();
+            let pair=findById(pairId);
+            socket.pair=pair.nickname;
+            pair.pair=nickname;
+            console.log(`${nickname}, ${pair.nickname} : start`);
+            socket.emit('join_response', protocol.join_response(types.JoinEventType.Start,pair.nickname));
+            pair.emit('join_response', protocol.join_response(types.JoinEventType.Start,nickname));
+        }
+        else{
+            wait_queue.push(socket.id);
+            console.log(`${nickname} : wait`);
+            socket.emit('join_response', protocol.join_response(types.JoinEventType.Wait));
+        }
     });
     socket.on('place_done', (msg) => {
+        let pair=findById(users[socket.pair]);
+        let shipInfos=JSON.parse(msg);
 
-        socket.isReady = true;
-        console.log(`${socket.UserName} is ready`);
-
-        if (socket.Pair.isReady) {
-            socket.emit('place_end', protocol.place_end());
-            socket.Pair.emit('place_end', protocol.place_end());
-            if (socket.Pair.isHost)
-                socket.Pair.emit('turn_start', protocol.turn_start());
-            else
-                socket.emit('turn_start', protocol.turn_start());
-            console.log('place end');
+        socket.ready = true;
+        console.log(`${socket.nickname} : place done`);
+        socket.emit('place_response', protocol.place_response(0,0));
+        if(pair.ready){
+            socket.emit('start_event');
+            pair.emit('start_event');
+            pair.emit('turn_event');
+            console.log(`${socket.nickname}, ${pair.nickname} : start`);
+            console.log(`${pair.nickname} : turn start`);
         }
-
+        else
+             pair.emit('enermy_ready');
     });
+
     socket.on('attack_request', (msg) => {
-        socket.Pair.emit('attack_forward',msg);
-        console.log(`${socket.UserName}'s attack start`,msg);
-    });
-    socket.on('attack_result', (msg) => {
-        socket.Pair.emit('attack_response', msg);
-        console.log(`${socket.PairName}'s attack end`,msg);
-    });
-    socket.on('turn_end', (msg) => {
-        // 게임이 끝났는지 확인한다.
-        let json = JSON.parse(msg);
-        if (json.IsGameOver) {
-            let winner = socket.PairName;
-            socket.Pair.emit('gameover', protocol.gameover(winner));
-            console.log(`The winner is ${winner}`);
-        } else {
-            socket.Pair.emit('turn_start', protocol.turn_start());
-            console.log(`${socket.PairName}'s turn started`);
-        }
-
-        socket.isGameOver = json.IsGameOver;
+        //socket.Pair.emit('attack_forward',msg);
+        let pair=findById(users[socket.pair]);
+        console.log(`${socket.nickname} : attack request`);
+        socket.emit('attack_response');
+        pair.emit('attack_event','');
+        pair.emit('turn_event');
     });
 
     socket.on('disconnect', function () {
-        if (socket.PairName != undefined) {
-            if (user_names[socket.PairName] != undefined)
-                socket.Pair.emit('pair_missing', '');
+        if (socket.pair != undefined) {
+            let pairid=users[socket.pair];
+            if (pairid != undefined)
+                findById(pairid).emit('pair_missing', '');
         }
-        delete user_names[socket.UserName];
+        delete users[socket.nickname];
+        wait_queue.splice(wait_queue.indexOf(socket.id),1);
         console.log('disconnect:', socket.id);
     })
 

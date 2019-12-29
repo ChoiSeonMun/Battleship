@@ -1,6 +1,8 @@
-var EDirec = {
+//==============================================
+//comon enum define
+//
+const EDirec = {
     default: -1,
-
     RIGHTUP: 1,
     RIGHT: 2,
     RIGHTDOWN: 3,
@@ -53,32 +55,31 @@ var EDirec = {
             return direc - 3;
         return direc + 3;
     }
-};
-
-var ShipType = {
+}
+const ShipType = {
     default: -1,
 
     Small: 2,
     Middle: 3,
     Big: 4,
     toString: function (type) {
-        switch (type) {
-            case this.Small: return "Small";
-            case this.Middle: return "Middle";
-            case this.Big: return "Big";
-            default: return "Default";
+        switch (parseInt(type)) {
+            case this.Small: return "소형";
+            case this.Middle: return "중형";
+            case this.Big: return "대형";
         }
+        return "";
     },
     getAllTypes: function () {
         return [2, 3, 4];
     }
 }
-var ScreenType = {
+const ScreenType = {
     default: -1,
     Build: 1,
     Battle: 2
 }
-var TileType = {
+const TileType = {
     default: -1,
     Build: 1,
     Damaged: 2,
@@ -87,23 +88,48 @@ var TileType = {
     Selected: 5,
     Enermy: 6
 }
-var ZOrder = {
+const ZOrder = {
     default: -1,
     Tile: 1,
     Ship: 2,
     Preview: 3,
     Highlight: 4
 }
-var AttackEventType = {
+const JoinEventType={
+    default: -1,
+    Wait: 1,
+    Start:2,
+    Failure:3
+}
+const AttackEventType = {
     default: -1,
     None: 1,
     Bomb: 2,
     Ship: 3,
     SunkenShip: 4
 }
-cc.EDirec = cc.Enum(EDirec);
-cc.ShipType = cc.Enum(ShipType);
-cc.ScreenType = cc.Enum(ScreenType);
-cc.TileType = cc.Enum(TileType);
-cc.ZOrder = cc.Enum(ZOrder);
-cc.AttackEventType = cc.Enum(AttackEventType);
+module.exports.EDirec=EDirec;
+module.exports.ShipType=ShipType;
+module.exports.ScreenType=ScreenType;
+module.exports.TileType=TileType;
+module.exports.ZOrder=ZOrder;
+module.exports.JoinEventType=JoinEventType;
+module.exports.AttackEventType=AttackEventType;
+//==============================================
+//common object type define
+//
+const ShipInfo=function(r,c,type,direc){
+    this.R = r;
+    this.C = c;
+    this.type=type;
+    this.direc=direc;
+}
+const ChangedTile=function(r,c,type){
+    this.R=r;
+    this.C=c;
+    this.type=type;
+}
+
+module.exports.ShipInfo=ShipInfo;
+module.exports.ChangedTile=ChangedTile;
+//==============================================

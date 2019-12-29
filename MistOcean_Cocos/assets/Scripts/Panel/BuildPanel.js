@@ -1,11 +1,7 @@
-cc.Class({
+cc.BuildPanel=cc.Class({
     extends: cc.Component,
 
     properties: {
-        GameManager: {
-            default: null,
-            type: cc.Node
-        },
         ShipCountLabel: {
             default: [],
             type: [cc.Label],
@@ -23,17 +19,16 @@ cc.Class({
         this.ShipCountLabel[index].string = cnt;
     },
     onSettingButtonClick: function (event, customEventData) {
-        this.GameManager.getComponent("GameManager").shipType = customEventData;
-        console.log(customEventData);
-        this.ModeLabel.string = "배치: " + customEventData + "칸";
+        let type= parseInt(customEventData);
+        cc.GameManager.shipType = type;
+        this.ModeLabel.string=cc.ShipType.toString(type);
     },
     onDeleteButtonClick: function (event) {
-        var manager = this.GameManager.getComponent("GameManager");
+        var manager = cc.GameManager;
         if (manager.target != null && manager.target.ship != null)
             manager.deleteTargetShip();
     },
     onStartButtonClick: function () {
-        this.ModeLabel.string = "";
-        this.GameManager.getComponent("GameManager").buildComplete();
+        cc.GameManager.buildComplete();
     },
 });

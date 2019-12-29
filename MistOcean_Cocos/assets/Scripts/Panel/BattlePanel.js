@@ -1,11 +1,7 @@
-cc.Class({
+cc.BattlePanel=cc.Class({
     extends: cc.Component,
 
     properties: {
-        GameManager: {
-            default: null,
-            type: cc.Node
-        },
         ShipCountLabel: {
             default: [],
             type: [cc.Label],
@@ -24,17 +20,14 @@ cc.Class({
             this.ShipCountLabel[i].string = value[i];
     },
     setTurn: function (turn) {
-        var text = turn ? "내 차례" : "상대 차례";
+        var text = turn ? "당신의 차례입니다." : "상대의 차례입니다.";
         this.TurnLabel.string = text;
     },
     onChangeButtonClick: function () {
-        this.GameManager.getComponent("GameManager").changeContainer();
+        cc.GameManager.changeContainer();
         this.FieldLabel.string = (this.FieldLabel.string == "상대 필드") ? "내 필드" : "상대 필드";
     },
     onAttackButtonClick: function () {
-        this.GameManager.getComponent("GameManager").attackTarget();
-    },
-    onTest: function () {
-        this.GameManager.getComponent("GameManager").isMyTurn = true;
+        cc.GameManager.attackTarget();
     },
 });
