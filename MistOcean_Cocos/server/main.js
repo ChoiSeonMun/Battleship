@@ -1,5 +1,6 @@
 //module import----------------------//
-const protocol = require("../assets/Common/protocol").protocol;
+const settings=require("../assets/Common/settings");
+const protocol = require("../assets/Common/protocol");
 const types=require("../assets/Common/types");
 const logic=require("./logic").logic;
 var io = require('socket.io');
@@ -61,6 +62,7 @@ socketio.on('connection', function (socket) {
     socket.on('place_done', (msg) => {
         let pair=findById(users[socket.pair]);
         let shipInfos=JSON.parse(msg);
+        socket.shipCount=settings.SHIP_COUNT.slice();
         socket.tileInfos=logic.getTileInfos(shipInfos);
         let bombpos=logic.getBombPos(socket.tileInfos);
         socket.ready = true;
@@ -79,9 +81,13 @@ socketio.on('connection', function (socket) {
     });
     socket.on('attack_request', (msg) => {
         let pair=findById(users[socket.pair]);
-        console.log(`${socket.nickname} : attack request`);
-        socket.emit('attack_response');
-        pair.emit('attack_event','');
+        let pos=JSON.parse(msg);
+        console.log(`${socket.nickname} : attack request ${pos}`);
+        let changed=logic.getChangedTiles(pos.R,pos.C,pair.tileInfos,pair.shipCount);
+        let type=logic.CheckTile(pos.R,pos.C,pair.tileInfos);
+        socket.emit('attack_response',protocol.attack_response(type,pair.shipCount,changed));
+        pair.emit('attack_event',protocol.attack_event(type,pair.shipCount,changed));
+        if(type==types.AttackEventType.Ship)
         pair.emit('turn_event');
     });
 

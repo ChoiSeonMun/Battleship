@@ -9,6 +9,11 @@ const EDirec = {
     LEFTDOWN: 4,
     LEFT: 5,
     LEFTUP: 6,
+    /**
+     * EDirec to vector
+     * @param {*} direc 
+     * @return {Vector} direc's vector 
+     */
     getVector: function (direc) {
         switch (direc) {
             case this.RIGHTUP: return new Vector(1, 1);
@@ -20,6 +25,11 @@ const EDirec = {
             default: return new Vector(0, 0);
         }
     },
+    /**
+     * EDirec to angle
+     * @param {*} direc 
+     * @returns {Number} degree angle
+     */
     getAngle: function (direc) {
         switch (direc) {
             case this.RIGHTUP: return 60;
@@ -31,6 +41,11 @@ const EDirec = {
             default: return 0;
         }
     },
+    /**
+     * angle to EDirec
+     * @param {Number} angle 
+     * @returns {*} matching EDirec
+     */
     getDirec: function (angle) {
         if (angle <= -150 || angle >= 150) return this.LEFT;
         if (angle > 90) return this.LEFTUP;
@@ -39,17 +54,31 @@ const EDirec = {
         if (angle < -30) return this.RIGHTDOWN;
         return this.RIGHT;
     },
+    /**
+     * vector to EDirec
+     * @param {Vector} vec
+     * @returns {*} matching EDirec 
+     */
     toDirec:function(vec){
         if(vec.x<0)
             return vec.y==1?this.LEFTUP:vec.y==0?this.LEFT:this.LEFTDOWN;
         return vec.y==1?this.RIGHTUP:vec.y==0?this.RIGHT:this.RIGHTDOWN;
     },
+    /**
+     * get all EDirec
+     * @returns {[*]} EDirec array
+     */
     getAllDirec: function () {
         var arr = [];
         for (var i = 1; i <= 6; ++i)
             arr.push(this.getVector(i));
         return arr;
     },
+    /**
+     * get opposite EDirec
+     * @param {*} direc origin EDirec
+     * @returns {*} opposite EDirec 
+     */
     getParallelDirec: function (direc) {
         if (direc > 3)
             return direc - 3;
@@ -130,28 +159,48 @@ const AttackEventType = {
     Ship: 3,
     SunkenShip: 4
 }
-module.exports.EDirec=EDirec;
-module.exports.ShipType=ShipType;
-module.exports.ScreenType=ScreenType;
-module.exports.TileType=TileType;
-module.exports.ZOrder=ZOrder;
-module.exports.JoinEventType=JoinEventType;
-module.exports.AttackEventType=AttackEventType;
+exports.EDirec=EDirec;
+exports.ShipType=ShipType;
+exports.ScreenType=ScreenType;
+exports.TileType=TileType;
+exports.ZOrder=ZOrder;
+exports.JoinEventType=JoinEventType;
+exports.AttackEventType=AttackEventType;
 //==============================================
 //common object type define
 //
 const Vector=function(x=0,y=0){
     this.x = x;
     this.y = y;
+    this.add=
+    /**
+     * return this+v vector
+     * @param {Vector} v
+     * @returns {Vector} vector added v
+     */
+        function(v){
+            return new Vector(this.x+v.x,this.y+v.y);
+    };
+    this.sub=
+    /**
+     * return this-v vector
+     * @param {Vector} v
+     * @returns {Vector} vector subed v
+     */
+        function(v){
+            return new Vector(this.x-v.x,this.y-v.y);
+    };
     Vector.prototype.toString=function(){
         return `(${this.x}, ${this.y})`;
-    }
+    };
 }
 const ShipInfo=function(r,c,type,direc){
     this.R = r;
     this.C = c;
     this.type=type;
     this.direc=direc;
+    this.damaged=[];
+    this.isSunken=function(){return this.damaged.length==this.type;}
     ShipInfo.prototype.toString=function(){
         return `{R:${this.R}, C:${this.R}, type:${ShipType.toString(this.type)}, diec:${EDirec.toString(this.direc)} }`;
     }
@@ -171,8 +220,8 @@ const ChangedTile=function(r,c,type){
     this.type=type;
 }
 
-module.exports.Vector=Vector;
-module.exports.ShipInfo=ShipInfo;
-module.exports.TileInfo=TileInfo;
-module.exports.ChangedTile=ChangedTile;
+exports.Vector=Vector;
+exports.ShipInfo=ShipInfo;
+exports.TileInfo=TileInfo;
+exports.ChangedTile=ChangedTile;
 //==============================================

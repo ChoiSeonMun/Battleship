@@ -10,10 +10,6 @@ cc.Class({
             default: null,
             type: cc.Label
         },
-        shipCount: {
-            default: [],
-            type: [cc.Integer]
-        },
         buildPanel: {
             default: null,
             type: cc.BuildPanel
@@ -50,7 +46,11 @@ cc.Class({
     //----------------------------------------//
     //game utility
     //
-    //show message in console box
+    /** 
+     * show message in console box
+     * @param {string} msg 
+     * @param {string} sender 
+     */
     log(msg,sender="System") {
         let d = new Date();
         let timestamp = "[" + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "] ";
@@ -60,29 +60,53 @@ cc.Class({
         logs.string = log + logs.string;
         logbox.height = logs.node.height + 160;
     },
-    //get client size of tile on (R,C)
+    /**
+     * get client size of tile on (R,C)
+     * @param {Number} R tile rows
+     * @param {Number} C tile cols
+     * @returns {cc.Vec2} client position
+     */
     getTilePos(R, C) {
         let x = parseInt(C * this.DX / 2 + this.DX / 2) + this.tileMargin.x;
         let y = parseInt(R * this.DY + this.DY / 1.5) + this.tileMargin.y;
         return cc.v2(x, y);
     },
-    //get client size of point
+    /**
+     * get client size of point
+     * @param {cc.Vec2} pos point on screen
+     * @returns {cc.Vec2} client position
+     */
     toClientPos(pos) {
         let view = this.tileContainer[0].parent;
         let body = view.parent;
         pos.y -= body.y + view.y - view.height / 2;
         return pos;
     },
-    //get EDirec of origin to forward vector
+    /**
+     * get EDirec of origin to forward vector 
+     * @param {cc.Vec2} origin start pos
+     * @param {cc.Vec2} forward end pos
+     * @returns {cc.EDirec} direction
+     */
     getDirect(origin, forward) {
         let angle = Math.atan2(forward.y - origin.y, forward.x - origin.x) * 180 / Math.PI;
         return cc.EDirec.getDirec(angle);
     },
-    //get whether (R,C) in valid range
+    /**
+     * get whether (R,C) in valid range
+     * @param {Number} R rows 
+     * @param {Number} C cols
+     * @returns {boolean} R,C is valid
+     */
     inRange(R, C) {
         return R >= 0 && C >= 0 && R < this.height && C < this.width * 2 + R % 2 - 1;
     },
-    //get whether mytile of (R,C) is blank ,isolation and in range
+    /**
+     * get whether mytile of (R,C) is blank ,isolation and in range
+     * @param {Number} R rows
+     * @param {Number} C cols
+     * @returns {boolean} tiles[R,C] is valid
+     */
     isValidTile(R, C) {
         if (!this.inRange(R, C) || this.myTiles[R][C].ship != null)   // 위치가 유효하지 않으면 false
             return false;
@@ -91,7 +115,14 @@ cc.Class({
                 return false;
         return true;
     },
-    //get whether each tiles under ship is valid
+    /**
+     * get whether each tiles under ship is valid
+     * @param {Number} R rows
+     * @param {Number} C cols
+     * @param {cc.ShipType} type ship type
+     * @param {cc.EDirec} direc  ship direction
+     * @returns {boolean} the ship is valid
+     */
     isValidShip(R, C, type, direc) {
         let step = cc.EDirec.getVector(direc);
         for (let i = 0; i < type; ++i) {
@@ -100,11 +131,20 @@ cc.Class({
         }
         return true;
     },
-    //get wehther all ships are placed
+    /**
+     * get wehther all ships are placed 
+     * @returns {boolean} all ship is placed
+     */
     allPlace() {                              
         return this.shipCount[0] + this.shipCount[1] + this.shipCount[2] == 0;
     },
-    //change mytile or enermytile of (R,C) to 'type' tile
+    /**
+     * change mytile or enermytile of (R,C) to 'type' tile
+     * @param {Number} R rows
+     * @param {Number} C cols
+     * @param {*} type to change tile type
+     * @param {boolean} mytile is mytile, default mytile
+     */
     changeTile(R, C, type, mytile = true) {
         let tiles = mytile ? this.myTiles : this.enermyTiles;
         if (tiles[R][C] != null)
@@ -117,7 +157,9 @@ cc.Class({
         tiles[R][C] = tile;
 
     },
-    //swap tile container
+    /**
+     * swap tile container
+     */
     changeContainer() {
         switch (this.currentScreen) {
             case cc.ScreenType.Build:
@@ -182,6 +224,7 @@ cc.Class({
         this.height=cc.settings.HEIGHT;
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);           
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);   
+        this.shipCount=cc.settings.SHIP_COUNT.slice();
         this.shipPrefabs = [];                     
         this.ShipPreviewPrefabs = [];            
         this.myTiles = [];
@@ -354,7 +397,7 @@ cc.Class({
         this.buildPanel.node.setPosition(cc.v2(-884, 0));
         this.battlePanel.node.setPosition(cc.v2(0, 0));
         this.changeContainer();
-        this.shipCount = [2, 2, 1];
+        this.shipCount = cc.settings.SHIP_COUNT.slice();
         this.enableBattleEvents();
         this.battlePanel.setTurn(false);
     },

@@ -41,5 +41,5 @@ const protocol = {
     //==============================================
 
 }
-module.exports.protocol=protocol;
+module.exports=protocol;
 //==============================================
