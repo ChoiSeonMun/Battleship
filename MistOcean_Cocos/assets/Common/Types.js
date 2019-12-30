@@ -11,13 +11,13 @@ const EDirec = {
     LEFTUP: 6,
     getVector: function (direc) {
         switch (direc) {
-            case this.RIGHTUP: return cc.v2(1, 1);
-            case this.RIGHT: return cc.v2(2, 0);
-            case this.RIGHTDOWN: return cc.v2(1, -1);
-            case this.LEFTDOWN: return cc.v2(-1, -1);
-            case this.LEFT: return cc.v2(-2, 0);
-            case this.LEFTUP: return cc.v2(-1, 1);
-            default: return cc.v2(0, 0);
+            case this.RIGHTUP: return new Vector(1, 1);
+            case this.RIGHT: return new Vector(2, 0);
+            case this.RIGHTDOWN: return new Vector(1, -1);
+            case this.LEFTDOWN: return new Vector(-1, -1);
+            case this.LEFT: return new Vector(-2, 0);
+            case this.LEFTUP: return new Vector(-1, 1);
+            default: return new Vector(0, 0);
         }
     },
     getAngle: function (direc) {
@@ -54,6 +54,17 @@ const EDirec = {
         if (direc > 3)
             return direc - 3;
         return direc + 3;
+    },
+    toString:function(direc){
+        switch (direc) {
+            case this.RIGHTUP: return "RIGHTUP";
+            case this.RIGHT: return "RIGHT";
+            case this.RIGHTDOWN: return "RIGHTDOWN";
+            case this.LEFTDOWN: return "LEFTDOWN";
+            case this.LEFT: return "LEFT";
+            case this.LEFTUP: return "LEFTUP";
+            default: return "default";
+        }
     }
 }
 const ShipType = {
@@ -86,7 +97,18 @@ const TileType = {
     Bomb: 3,
     Selectable: 4,
     Selected: 5,
-    Enermy: 6
+    Enermy: 6,
+    toString: function (type) {
+        switch (type) {
+            case this.Build: return "Build";
+            case this.Damaged: return "Damaged";
+            case this.Bomb: return "Bomb";
+            case this.Selectable: return "Selectable";
+            case this.Selected: return "Selected";
+            case this.Enermy: return "Enermy";
+        }
+        return "";
+    },
 }
 const ZOrder = {
     default: -1,
@@ -118,11 +140,30 @@ module.exports.AttackEventType=AttackEventType;
 //==============================================
 //common object type define
 //
+const Vector=function(x=0,y=0){
+    this.x = x;
+    this.y = y;
+    Vector.prototype.toString=function(){
+        return `(${this.x}, ${this.y})`;
+    }
+}
 const ShipInfo=function(r,c,type,direc){
     this.R = r;
     this.C = c;
     this.type=type;
     this.direc=direc;
+    ShipInfo.prototype.toString=function(){
+        return `{R:${this.R}, C:${this.R}, type:${ShipType.toString(this.type)}, diec:${EDirec.toString(this.direc)} }`;
+    }
+}
+const TileInfo=function(r,c,type,ship=null){
+    this.R = r;
+    this.C = c;
+    this.type=type;
+    this.ship=ship;
+    TileInfo.prototype.toString=function(){
+        return `{R:${this.R}, C:${this.R}, type:${TileType.toString(this.type)}, ${this.ship!=null?"isShip":""} }`;
+    }
 }
 const ChangedTile=function(r,c,type){
     this.R=r;
@@ -130,6 +171,8 @@ const ChangedTile=function(r,c,type){
     this.type=type;
 }
 
+module.exports.Vector=Vector;
 module.exports.ShipInfo=ShipInfo;
+module.exports.TileInfo=TileInfo;
 module.exports.ChangedTile=ChangedTile;
 //==============================================

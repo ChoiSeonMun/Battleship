@@ -56,14 +56,17 @@ socketio.on('connection', function (socket) {
             console.log(`${nickname} : wait`);
             socket.emit('join_response', protocol.join_response(types.JoinEventType.Wait));
         }
+        
     });
     socket.on('place_done', (msg) => {
         let pair=findById(users[socket.pair]);
         let shipInfos=JSON.parse(msg);
-
+        socket.tileInfos=logic.getTileInfos(shipInfos);
+        let bombpos=logic.getBombPos(socket.tileInfos);
         socket.ready = true;
-        console.log(`${socket.nickname} : place done`);
-        socket.emit('place_response', protocol.place_response(0,0));
+        console.log(`${socket.nickname} : place done, bomb : ${bombpos}`);
+        socket.tileInfos[bombpos.y][bombpos.x].type=types.TileType.Bomb;
+        socket.emit('place_response', protocol.place_response(bombpos));
         if(pair.ready){
             socket.emit('start_event');
             pair.emit('start_event');
@@ -75,7 +78,6 @@ socketio.on('connection', function (socket) {
              pair.emit('enermy_ready');
     });
     socket.on('attack_request', (msg) => {
-        //socket.Pair.emit('attack_forward',msg);
         let pair=findById(users[socket.pair]);
         console.log(`${socket.nickname} : attack request`);
         socket.emit('attack_response');
@@ -90,7 +92,9 @@ socketio.on('connection', function (socket) {
                 findById(pairid).emit('pair_missing', '');
         }
         delete users[socket.nickname];
-        wait_queue.splice(wait_queue.indexOf(socket.id),1);
+        let i=wait_queue.indexOf(socket.id);
+        if(i!=-1)
+            wait_queue.splice(i,1);
         console.log('disconnect:', socket.id);
     })
 });

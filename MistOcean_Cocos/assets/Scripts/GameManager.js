@@ -1,8 +1,6 @@
 cc.Class({
     extends: cc.Component,
     properties: {
-        width: 0,
-        height: 0,
         tileMargin: cc.v2(0, 0),
         myName: {
             default: null,
@@ -180,6 +178,8 @@ cc.Class({
     //initialize variable used by game logic
     declareVariable() {
         let tile = this.hexTilePrefabs[0].data;
+        this.width=cc.settings.WIDTH;
+        this.height=cc.settings.HEIGHT;
         this.DX = parseInt(tile._contentSize.width * tile._scale.x - 2);           
         this.DY = parseInt(tile._contentSize.height * tile._scale.y * 0.75 - 2);   
         this.shipPrefabs = [];                     

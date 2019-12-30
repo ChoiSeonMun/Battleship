@@ -17,8 +17,8 @@ const protocol = {
     place_done(shipinfos) {//client
         return JSON.stringify(shipinfos);
     },
-    place_response(R,C) {//server
-        return JSON.stringify({R:R,C:C});
+    place_response(pos) {//server
+        return JSON.stringify({R:pos.y,C:pos.x});
     },
     enermy_ready(){},//server
     start_event(){},//server
