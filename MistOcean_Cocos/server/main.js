@@ -1,6 +1,7 @@
 //module import----------------------//
 const protocol = require("../assets/Common/protocol").protocol;
 const types=require("../assets/Common/types");
+const logic=require("./logic").logic;
 var io = require('socket.io');
 var http = require('http');
 var express = require('express');
@@ -73,7 +74,6 @@ socketio.on('connection', function (socket) {
         else
              pair.emit('enermy_ready');
     });
-
     socket.on('attack_request', (msg) => {
         //socket.Pair.emit('attack_forward',msg);
         let pair=findById(users[socket.pair]);
@@ -93,6 +93,5 @@ socketio.on('connection', function (socket) {
         wait_queue.splice(wait_queue.indexOf(socket.id),1);
         console.log('disconnect:', socket.id);
     })
-
-
 });
+//-----------------------------------//

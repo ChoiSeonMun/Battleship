@@ -4,6 +4,14 @@ cc.Class({
         width: 0,
         height: 0,
         tileMargin: cc.v2(0, 0),
+        myName: {
+            default: null,
+            type: cc.Label
+        },
+        enermyName: {
+            default: null,
+            type: cc.Label
+        },
         shipCount: {
             default: [],
             type: [cc.Integer]
@@ -164,6 +172,8 @@ cc.Class({
         this.enableBuildEvents();
         this.setShipPrefabs();
         this.initTiles();
+        this.myName.string=cc.nickname;
+        this.enermyName.string=cc.enermyName;
         this.log("게임이 시작되었습니다.");
         cc.Socket.on("enermy_ready",this.enermy_ready_handler);
     },
