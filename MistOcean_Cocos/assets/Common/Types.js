@@ -59,32 +59,37 @@ const EDirec = {
      * @param {Vector} vec
      * @returns {*} matching EDirec 
      */
-    toDirec:function(vec){
-        if(vec.x<0)
-            return vec.y==1?this.LEFTUP:vec.y==0?this.LEFT:this.LEFTDOWN;
-        return vec.y==1?this.RIGHTUP:vec.y==0?this.RIGHT:this.RIGHTDOWN;
+    toDirec: function (vec) {
+        if (vec.x < 0)
+            return vec.y == 1 ? this.LEFTUP : vec.y == 0 ? this.LEFT : this.LEFTDOWN;
+        return vec.y == 1 ? this.RIGHTUP : vec.y == 0 ? this.RIGHT : this.RIGHTDOWN;
     },
     /**
-     * get all EDirec
-     * @returns {[*]} EDirec array
+     * get all EDirec's Vector
+     * @returns {[*]} Vector array
      */
-    getAllDirec: function () {
+    getAllVectors() {
         var arr = [];
         for (var i = 1; i <= 6; ++i)
             arr.push(this.getVector(i));
         return arr;
     },
     /**
-     * get opposite EDirec
+     * get all Vectors excluded direc, opposite direc
      * @param {*} direc origin EDirec
-     * @returns {*} opposite EDirec 
+     * @returns {*} other Vector array 
      */
-    getParallelDirec: function (direc) {
-        if (direc > 3)
-            return direc - 3;
-        return direc + 3;
+    getVerticalVectors(direc) {
+        let vs = this.getAllVectors();
+        let v1 = this.getVector(direc);
+        let v2 = this.getVector(direc > 3 ? direc - 3 : direc + 3);
+        var result = [];
+        for (let v of vs)
+            if (!v.equals(v1) && !v.equals(v2))
+                result.push(v);
+        return result;
     },
-    toString:function(direc){
+    toString: function (direc) {
         switch (direc) {
             case this.RIGHTUP: return "RIGHTUP";
             case this.RIGHT: return "RIGHT";
@@ -146,11 +151,11 @@ const ZOrder = {
     Preview: 3,
     Highlight: 4
 }
-const JoinEventType={
+const JoinEventType = {
     default: -1,
     Wait: 1,
-    Start:2,
-    Failure:3
+    Start: 2,
+    Failure: 3
 }
 const AttackEventType = {
     default: -1,
@@ -159,69 +164,123 @@ const AttackEventType = {
     Ship: 3,
     SunkenShip: 4
 }
-exports.EDirec=EDirec;
-exports.ShipType=ShipType;
-exports.ScreenType=ScreenType;
-exports.TileType=TileType;
-exports.ZOrder=ZOrder;
-exports.JoinEventType=JoinEventType;
-exports.AttackEventType=AttackEventType;
+exports.EDirec = EDirec;
+exports.ShipType = ShipType;
+exports.ScreenType = ScreenType;
+exports.TileType = TileType;
+exports.ZOrder = ZOrder;
+exports.JoinEventType = JoinEventType;
+exports.AttackEventType = AttackEventType;
 //==============================================
 //common object type define
 //
-const Vector=function(x=0,y=0){
-    this.x = x;
-    this.y = y;
-    this.add=
+class Vector {
+    constructor(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+    }
     /**
      * return this+v vector
      * @param {Vector} v
      * @returns {Vector} vector added v
      */
-        function(v){
-            return new Vector(this.x+v.x,this.y+v.y);
-    };
-    this.sub=
+    add(v) {
+        return new Vector(this.x + v.x, this.y + v.y);
+    }
     /**
      * return this-v vector
      * @param {Vector} v
      * @returns {Vector} vector subed v
      */
-        function(v){
-            return new Vector(this.x-v.x,this.y-v.y);
-    };
-    Vector.prototype.toString=function(){
+    sub(v) {
+        return new Vector(this.x - v.x, this.y - v.y);
+    }
+    /**
+     * return v equal this
+     * @param {Vector} v
+     * @returns {boolean} v eaul this
+     */
+    equals(v) {
+        return this.x == v.x && this.y == v.y;
+    }
+    toString() {
         return `(${this.x}, ${this.y})`;
-    };
+    }
 }
-const ShipInfo=function(r,c,type,direc){
-    this.R = r;
-    this.C = c;
-    this.type=type;
-    this.direc=direc;
-    this.damaged=[];
-    this.isSunken=function(){return this.damaged.length==this.type;}
-    ShipInfo.prototype.toString=function(){
+class ShipInfo {
+    /**
+     * parsing data to ShipInfo
+     * @param {*} data object had R,C,type,direc
+     * @returns {ShipInfo}
+     */
+    static parse(data) {
+        return new ShipInfo(data.R, data.C, data.type, data.direc);
+    }
+    constructor(r, c, type, direc) {
+        this.R = r;
+        this.C = c;
+        this.type = type;
+        this.direc = direc;
+        this.damaged = [];
+    }
+    /**
+     * return all ship's position
+     * @returns {Vector[]} position vector array
+     */
+    getPositions() {
+        let poss = [];
+        let step = EDirec.getVector(this.direc)
+        for (let i = 0; i < this.type; ++i) {
+            let r = this.R + step.y * i;
+            let c = this.C + step.x * i;
+            poss.push(new Vector(c, r));
+        }
+        return poss;
+    }
+    /**
+     * return the ship is all found
+     */
+    isSunken() {
+        return this.damaged.length == this.type;
+    }
+    toString() {
         return `{R:${this.R}, C:${this.R}, type:${ShipType.toString(this.type)}, diec:${EDirec.toString(this.direc)} }`;
     }
+
 }
-const TileInfo=function(r,c,type,ship=null){
-    this.R = r;
-    this.C = c;
-    this.type=type;
-    this.ship=ship;
-    TileInfo.prototype.toString=function(){
-        return `{R:${this.R}, C:${this.R}, type:${TileType.toString(this.type)}, ${this.ship!=null?"isShip":""} }`;
+class TileInfo {
+    constructor(r, c, type, ship = null) {
+        this.R = r;
+        this.C = c;
+        this.type = type;
+        this.ship = ship;
+    }
+    /**
+     * return the tile is ship
+     */
+    isShip() {
+        return this.ship != null;
+    }
+    /**
+     * return the tile is selected
+     */
+    isSelected() {
+        return this.type == TileType.Selected;
+    }
+    toString() {
+        return `{R:${this.R}, C:${this.R}, type:${TileType.toString(this.type)}, ${this.ship != null ? "isShip" : ""} }`;
+    };
+}
+class ChangedTile {
+    constructor(r, c, type) {
+        this.R = r;
+        this.C = c;
+        this.type = type;
     }
 }
-const ChangedTile=function(r,c,type){
-    this.R=r;
-    this.C=c;
-    this.type=type;
-}
 
-exports.Vector=Vector;
-exports.ShipInfo=ShipInfo;
-exports.TileInfo=TileInfo;
-exports.ChangedTile=ChangedTile;
+exports.Vector = Vector;
+exports.ShipInfo = ShipInfo;
+exports.TileInfo = TileInfo;
+exports.ChangedTile = ChangedTile;
 //==============================================

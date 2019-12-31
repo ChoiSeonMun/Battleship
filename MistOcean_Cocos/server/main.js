@@ -62,11 +62,12 @@ socketio.on('connection', function (socket) {
     socket.on('place_done', (msg) => {
         let pair=findById(users[socket.pair]);
         let shipInfos=JSON.parse(msg);
+        console.log(shipInfos);
         socket.shipCount=settings.SHIP_COUNT.slice();
         socket.tileInfos=logic.getTileInfos(shipInfos);
         let bombpos=logic.getBombPos(socket.tileInfos);
         socket.ready = true;
-        console.log(`${socket.nickname} : place done, bomb : ${bombpos}`);
+        console.log(`${socket.nickname} : place done, bomb : (${bombpos.y}, ${bombpos.x})`);
         socket.tileInfos[bombpos.y][bombpos.x].type=types.TileType.Bomb;
         socket.emit('place_response', protocol.place_response(bombpos));
         if(pair.ready){
@@ -82,13 +83,18 @@ socketio.on('connection', function (socket) {
     socket.on('attack_request', (msg) => {
         let pair=findById(users[socket.pair]);
         let pos=JSON.parse(msg);
-        console.log(`${socket.nickname} : attack request ${pos}`);
-        let changed=logic.getChangedTiles(pos.R,pos.C,pair.tileInfos,pair.shipCount);
+        console.log(`${socket.nickname} : attack request (${pos.R}, ${pos.C})`);
         let type=logic.CheckTile(pos.R,pos.C,pair.tileInfos);
+        let changed=logic.getChangedTiles(pos.R,pos.C,pair.tileInfos,pair.shipCount);
+        if(logic.CheckTile(pos.R,pos.C,pair.tileInfos)==types.AttackEventType.SunkenShip)
+            type=types.AttackEventType.SunkenShip;
+        console.log(type,pair.shipCount,changed)
         socket.emit('attack_response',protocol.attack_response(type,pair.shipCount,changed));
         pair.emit('attack_event',protocol.attack_event(type,pair.shipCount,changed));
-        if(type==types.AttackEventType.Ship)
-        pair.emit('turn_event');
+        if(type==types.AttackEventType.Ship||type==types.AttackEventType.SunkenShip)
+            socket.emit('turn_event');
+        else
+            pair.emit('turn_event');
     });
 
     socket.on('disconnect', function () {

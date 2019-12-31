@@ -18,20 +18,17 @@ const logic = {
      * @param {types.ShipInfo[]} shipinfos ship infomations
      * @returns {types.TileInfo[][]} tileinfos
      */
-    getTileInfos(shipinfos) {
+    getTileInfos(ships) {
         var tiles = [];
         for (let r = 0; r < this.height; ++r) {
             tiles[r] = [];
             for (let c = 0; c < this.width; ++c)
                 tiles[r][c * 2 + r % 2] = new types.TileInfo(r, c * 2 + r % 2, types.TileType.Selectable);
         }
-        for (let ship of shipinfos) {
-            let step = types.EDirec.getVector(ship.direc);
-            for (let i = 0; i < ship.type; ++i) {
-                let r = ship.R + step.y * i;
-                let c = ship.C + step.x * i;
-                tiles[r][c].ship = ship;
-            }
+        for (let ship of ships) {
+            let shipInfo = types.ShipInfo.parse(ship);
+            for (let v of shipInfo.getPositions())
+                tiles[v.y][v.x].ship = shipInfo;
         }
         return tiles;
     },
@@ -62,8 +59,10 @@ const logic = {
         let tile = tiles[R][C];
         switch (tile.type) {
             case types.TileType.Selectable:
-                return tile.ship != null ? 
-                    tile.ship.isSunken()?types.AttackEventType.SunkenShip:types.AttackEventType.Ship
+                return tile.isShip() ?
+                    tile.ship.isSunken() ?
+                        types.AttackEventType.SunkenShip
+                        : types.AttackEventType.Ship
                     : types.AttackEventType.None;
             case types.TileType.Bomb:
                 return types.AttackEventType.Bomb;
@@ -85,85 +84,77 @@ const logic = {
                 return this.attackEmpty(R, C, tiles);
             case types.AttackEventType.Bomb:
                 return this.attackBomb(R, C, tiles, shipCount);
-            case types.AttackEventType.SunkenShip:
             case types.AttackEventType.Ship:
                 return this.attackShip(R, C, tiles, shipCount);
             default: return [];
         }
     },
     attackEmpty: function (R, C, tiles) {
-        tiles.type = types.TileType.Selected;
+        tiles[R][C].type = types.TileType.Selected;
         return [new types.ChangedTile(R, C, types.TileType.Selected)];
     },
     attackBomb: function (R, C, tiles, shipCount) {
         let ct = [];
-        tiles.type = types.TileType.Selected;
-        for (let v of types.EDirec.getAllDirec())
+        tiles[R][C].type = types.TileType.Selected;
+        for (let v of types.EDirec.getAllVectors())
             if (this.inRange(R + v.y, C + v.x))
-                ct.concat(this.getChangedTiles(R + v.y, C + v.x, tiles, shipCount));
+                ct = ct.concat(this.getChangedTiles(R + v.y, C + v.x, tiles, shipCount));
         ct.push(new ChangedTile(R, C, types.TileType.Bomb));
         return ct;
     },
     attackShip: function (R, C, tiles, shipCount) {
         let ct;
         let ship = tiles[R][C].ship;
+        tiles[R][C].type = types.TileType.Selected;
         ship.damaged.push(new types.Vector(C, R));
-
-        if (ship.isSunken())
+        if (ship.damaged.length == ship.type)
             ct = this.attackSunkenShip(ship, tiles, shipCount);
         else
-            ct = this.attackSide(R, C, tiles);
+            ct = this.attackSide(R, C, tiles, shipCount);
 
         ct.push(new types.ChangedTile(R, C, types.TileType.Enermy));
         return ct;
     },
     attackSunkenShip: function (ship, tiles, shipCount) {
-        let ships = ship.damaged;
-        let direcs = types.EDirec.getAllDirec();
-        let bomb = this.findBomb(ships, direcs, tiles);
+        let shipPositions = ship.damaged;
+        let direcs = types.EDirec.getAllVectors();
+        let bomb = this.findBomb(shipPositions, direcs, tiles);
         let ct = bomb != null ? this.attackBomb(bomb.y, bomb.x, tiles, shipCount) : [];
-        ct.concat(this.attackDirec(ships, direcs, tiles));
+        ct = ct.concat(this.attackDirec(shipPositions, direcs, tiles));
         --shipCount[ship.type - 2];
         return ct;
     },
-    findBomb: function (ships, direcs, tiles) {
-        for (let ship of ships) {
-            for (let v of direcs) {
-                let R = ship.R + v.y;
-                let C = ship.C + v.x;
-                if (this.inRange(R, C) && tiles[R][C].type == types.TileType.Bomb);
-                return new types.Vector(C, R);
+    findBomb: function (shipPositions, direcs, tiles) {
+        for (let v1 of shipPositions) {
+            for (let v2 of direcs) {
+                let R = v1.y + v2.y;
+                let C = v1.x + v2.x;
+                if (this.inRange(R, C) && tiles[R][C].type == types.TileType.Bomb)
+                    return new types.Vector(C, R);
             }
         }
         return null;
     },
-    attackDirec: function (ships, direcs, tiles) {
+    attackDirec: function (shipPositions, direcs, tiles) {
         let ct = [];
-        for (let ship of ships) {
-            for (let v of direcs) {
-                let R = ship.R + v.y;
-                let C = ship.C + v.x;
+        for (let v1 of shipPositions) {
+            for (let v2 of direcs) {
+                let R = v1.y + v2.y;
+                let C = v1.x + v2.x;
                 if (this.inRange(R, C) && tiles[R][C].type == types.TileType.Selectable)
-                    ct.concat(this.attackEmpty(R, C, tiles));
+                    ct = ct.concat(this.attackEmpty(R, C, tiles));
             }
         }
         return ct;
     },
-    attackSide: function (R, C, tiles) {
+    attackSide: function (R, C, tiles, shipCount) {
         let shipPositions = this.getConnections(R, C, tiles);
         if (shipPositions.length == 1)
-            return ct;
-        let step = types.EDirec.getVector(tiles[R][C].ship.type);
-        let rstep = types.EDirec.getParallelDirec(types.EDirec.toDirec(step));
-        let direcs = [];
-        for (let v of types.EDirec.getAllDirec())
-            if (!v.equals(step) && !v.equals(rstep))
-                direcs.push(v);
-
-        let bomb = this.findBomb(ships, direcs, tiles);
-
+            return [];
+        direcs = types.EDirec.getVerticalVectors(tiles[R][C].ship.direc);
+        let bomb = this.findBomb(shipPositions, direcs, tiles);
         let ct = bomb != null ? this.attackBomb(bomb.y, bomb.x, bomb.x, tiles, shipCount) : [];
-        ct.concat(this.attackDirec(ships, direcs,tiles));
+        ct = ct.concat(this.attackDirec(shipPositions, direcs, tiles));
         return ct;
     },
     getConnections: function (R, C, tiles) {
@@ -179,14 +170,30 @@ const logic = {
     },
     findConnection: function (R, C, tiles) {
         let vecs = [];
-        for (let v of types.EDirec.getAllDirec()) {
+        for (let v of types.EDirec.getAllVectors()) {
             if (!this.inRange(R + v.y, C + v.x))
                 continue;
             let tile = tiles[R + v.y][C + v.x];
-            if (tile.ship != null)
+            if (tile.isShip() && tile.isSelected())
                 vecs.push(v);
         }
         return vecs;
     },
 }
 module.exports.logic = logic;
+
+// let ships = [
+//     { R: 7, C: 9, type: 2, direc: 4, damaged: [] },
+//     { R: 6, C: 2, type: 2, direc: 4, damaged: [] },
+//     { R: 4, C: 14, type: 3, direc: 4, damaged: [] },
+//     { R: 0, C: 0, type: 3, direc: 1, damaged: [] },
+//     { R: 9, C: 11, type: 4, direc: 2, damaged: [] }
+// ]
+// let tiles = logic.getTileInfos(ships);
+// let shipCount = [2, 2, 1];
+// //console.log(tiles);
+// console.log(logic.getChangedTiles(9, 11, tiles, shipCount));
+// console.log(logic.getChangedTiles(9, 13, tiles, shipCount));
+// console.log(logic.getChangedTiles(9, 15, tiles, shipCount));
+// console.log(logic.getChangedTiles(9, 17, tiles, shipCount));
+// console.log(shipCount);
