@@ -388,7 +388,7 @@ cc.Class({
     },
     //set bomb in mytiles
     setBomb(bombpos) {
-        this.log("폭탄이 설치되었습니다.");
+        this.log(`폭탄이 설치되었습니다.${bombpos.R},${bombpos.C}`);
         this.changeTile(bombpos.R, bombpos.C, cc.TileType.Bomb);
 
     },
@@ -419,6 +419,8 @@ cc.Class({
             this.log("당신의 차례가 아닙니다.");
             return;
         }
+        if(this.target.type!=cc.TileType.Selectable)
+            return;
         this.turn = false;
         this.battlePanel.setTurn(false);
         cc.Socket.on('attack_response', this.attack_response_handler);
@@ -432,15 +434,15 @@ cc.Class({
             case cc.AttackEventType.Bomb:
                 this.log(myturn ? "폭탄을 공격했습니다." : "폭탄이 폭발했습니다."); return;
             case cc.AttackEventType.Ship:
-                this.log(myturn ? "배를 찾았습니다, 연속 공격!" : "배를 공격당했습니다!"); return;
+                this.log(myturn ? "배를 공격했습니다!" : "배를 공격당했습니다!"); return;
             case cc.AttackEventType.SunkenShip:
-                this.log(myturn ? "배를 침몰시켰습니다! 연속 공격!" : "배가 침몰했습니다!"); return;
+                this.log(myturn ? "배를 침몰시켰습니다!" : "배가 침몰했습니다!"); return;
             default:
         }
     },
     updateTiles(changed, mytile) {
         for (let tile of changed)
-            this.changeTile(tile.R, tile.C, tile.mytile ? cc.types.TileType.Enermy : type, mytile);
+            this.changeTile(tile.R, tile.C, tile.mytile ? cc.types.TileType.Enermy : tile.type, mytile);
     },
     gameover(winner) { },
     //----------------------------------------//

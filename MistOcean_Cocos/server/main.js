@@ -86,9 +86,9 @@ socketio.on('connection', function (socket) {
         console.log(`${socket.nickname} : attack request (${pos.R}, ${pos.C})`);
         let type=logic.CheckTile(pos.R,pos.C,pair.tileInfos);
         let changed=logic.getChangedTiles(pos.R,pos.C,pair.tileInfos,pair.shipCount);
-        if(logic.CheckTile(pos.R,pos.C,pair.tileInfos)==types.AttackEventType.SunkenShip)
+        let pairship=pair.tileInfos[pos.R][pos.C].ship;
+        if(pairship!=null&&pairship.isSunken())
             type=types.AttackEventType.SunkenShip;
-        console.log(type,pair.shipCount,changed)
         socket.emit('attack_response',protocol.attack_response(type,pair.shipCount,changed));
         pair.emit('attack_event',protocol.attack_event(type,pair.shipCount,changed));
         if(type==types.AttackEventType.Ship||type==types.AttackEventType.SunkenShip)

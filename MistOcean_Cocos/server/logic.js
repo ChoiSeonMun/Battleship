@@ -43,8 +43,10 @@ const logic = {
             pos.y = Math.floor(Math.random() * this.height);
             pos.x = Math.floor(Math.random() * this.width);
             pos.x = pos.x * 2 + pos.y % 2;
-            if (!tiles[pos.y][pos.x].ship != null)
+            if (tiles[pos.y][pos.x].ship == null){
+                console.log(tiles[pos.y][pos.x]);
                 break;
+            }
         }
         return pos;
     },
@@ -59,11 +61,7 @@ const logic = {
         let tile = tiles[R][C];
         switch (tile.type) {
             case types.TileType.Selectable:
-                return tile.isShip() ?
-                    tile.ship.isSunken() ?
-                        types.AttackEventType.SunkenShip
-                        : types.AttackEventType.Ship
-                    : types.AttackEventType.None;
+                return tile.isShip() ? types.AttackEventType.Ship : types.AttackEventType.None;
             case types.TileType.Bomb:
                 return types.AttackEventType.Bomb;
             default:
@@ -99,7 +97,7 @@ const logic = {
         for (let v of types.EDirec.getAllVectors())
             if (this.inRange(R + v.y, C + v.x))
                 ct = ct.concat(this.getChangedTiles(R + v.y, C + v.x, tiles, shipCount));
-        ct.push(new ChangedTile(R, C, types.TileType.Bomb));
+        ct.push(new types.ChangedTile(R, C, types.TileType.Bomb));
         return ct;
     },
     attackShip: function (R, C, tiles, shipCount) {
