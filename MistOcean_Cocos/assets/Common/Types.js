@@ -124,25 +124,29 @@ const ScreenType = {
     Build: 1,
     Battle: 2
 }
-const TileType = {
-    default: -1,
-    Build: 1,
-    Damaged: 2,
-    Bomb: 3,
-    Selectable: 4,
-    Selected: 5,
-    Enermy: 6,
-    toString: function (type) {
-        switch (type) {
-            case this.Build: return "Build";
-            case this.Damaged: return "Damaged";
-            case this.Bomb: return "Bomb";
-            case this.Selectable: return "Selectable";
-            case this.Selected: return "Selected";
-            case this.Enermy: return "Enermy";
+const TileTypes = {
+    Normal: 0,
+    Attacked: 1,
+    HasBomb: 2,
+    HasShip: 3,
+    toString(tileType){
+        str="";
+        switch(tileType){
+            case this.Normal:
+                str="Normal";
+                break;
+            case this.Attacked:
+                str="Attacked";
+                break;
+            case this.HasBomb:
+                str="HasBomb";
+                break;
+            case this.HasShip:
+                str="HasShip";
+                break;
         }
-        return "";
-    },
+        return str;
+    }
 }
 const ZOrder = {
     default: -1,
@@ -167,7 +171,7 @@ const AttackEventType = {
 exports.EDirec = EDirec;
 exports.ShipType = ShipType;
 exports.ScreenType = ScreenType;
-exports.TileType = TileType;
+exports.TileTypes = TileTypes;
 exports.ZOrder = ZOrder;
 exports.JoinEventType = JoinEventType;
 exports.AttackEventType = AttackEventType;
