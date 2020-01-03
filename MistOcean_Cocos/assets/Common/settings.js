@@ -3,10 +3,13 @@
 //
 const settings = {
     PORT: 12345,
-    IP: '172.19.82.73',
+    IP: '211.57.241.220',//'172.19.88.42',
+    WIDTH:10,
+    HEIGHT:10,
+    SHIP_COUNT:[2,2,1],
     getURL(){
         return this.IP+":"+this.PORT;
     }
 };
-module.exports.settings=settings;
+module.exports=settings;
 //==============================================

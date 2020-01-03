@@ -1,8 +1,8 @@
 //==============================================
 //add common setting in cc
 //
-cc.protocol=require("protocol").protocol;
-cc.settings=require("settings").settings;
+cc.protocol=require("protocol");
+cc.settings=require("settings");
 let types=require("types");
 cc.EDirec = cc.Enum(types.EDirec);
 cc.ShipType = cc.Enum(types.ShipType);
