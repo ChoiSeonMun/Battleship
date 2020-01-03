@@ -1,94 +1,13 @@
 //==============================================
 //comon enum define
 //
-const EDirec = {
-    default: -1,
+const Directions = {
     RIGHTUP: 1,
     RIGHT: 2,
     RIGHTDOWN: 3,
     LEFTDOWN: 4,
     LEFT: 5,
     LEFTUP: 6,
-    /**
-     * EDirec to vector
-     * @param {*} direc 
-     * @return {Vector} direc's vector 
-     */
-    getVector: function (direc) {
-        switch (direc) {
-            case this.RIGHTUP: return new Vector(1, 1);
-            case this.RIGHT: return new Vector(2, 0);
-            case this.RIGHTDOWN: return new Vector(1, -1);
-            case this.LEFTDOWN: return new Vector(-1, -1);
-            case this.LEFT: return new Vector(-2, 0);
-            case this.LEFTUP: return new Vector(-1, 1);
-            default: return new Vector(0, 0);
-        }
-    },
-    /**
-     * EDirec to angle
-     * @param {*} direc 
-     * @returns {Number} degree angle
-     */
-    getAngle: function (direc) {
-        switch (direc) {
-            case this.RIGHTUP: return 60;
-            case this.RIGHT: return 0;
-            case this.RIGHTDOWN: return 300;
-            case this.LEFTDOWN: return 240;
-            case this.LEFT: return 180;
-            case this.LEFTUP: return 120;
-            default: return 0;
-        }
-    },
-    /**
-     * angle to EDirec
-     * @param {Number} angle 
-     * @returns {*} matching EDirec
-     */
-    getDirec: function (angle) {
-        if (angle <= -150 || angle >= 150) return this.LEFT;
-        if (angle > 90) return this.LEFTUP;
-        if (angle > 30) return this.RIGHTUP;
-        if (angle < -90) return this.LEFTDOWN;
-        if (angle < -30) return this.RIGHTDOWN;
-        return this.RIGHT;
-    },
-    /**
-     * vector to EDirec
-     * @param {Vector} vec
-     * @returns {*} matching EDirec 
-     */
-    toDirec: function (vec) {
-        if (vec.x < 0)
-            return vec.y == 1 ? this.LEFTUP : vec.y == 0 ? this.LEFT : this.LEFTDOWN;
-        return vec.y == 1 ? this.RIGHTUP : vec.y == 0 ? this.RIGHT : this.RIGHTDOWN;
-    },
-    /**
-     * get all EDirec's Vector
-     * @returns {[*]} Vector array
-     */
-    getAllVectors() {
-        var arr = [];
-        for (var i = 1; i <= 6; ++i)
-            arr.push(this.getVector(i));
-        return arr;
-    },
-    /**
-     * get all Vectors excluded direc, opposite direc
-     * @param {*} direc origin EDirec
-     * @returns {*} other Vector array 
-     */
-    getVerticalVectors(direc) {
-        let vs = this.getAllVectors();
-        let v1 = this.getVector(direc);
-        let v2 = this.getVector(direc > 3 ? direc - 3 : direc + 3);
-        var result = [];
-        for (let v of vs)
-            if (!v.equals(v1) && !v.equals(v2))
-                result.push(v);
-        return result;
-    },
     toString: function (direc) {
         switch (direc) {
             case this.RIGHTUP: return "RIGHTUP";
@@ -101,6 +20,105 @@ const EDirec = {
         }
     }
 }
+// const Directions = {
+//     RIGHTUP: 1,
+//     RIGHT: 2,
+//     RIGHTDOWN: 3,
+//     LEFTDOWN: 4,
+//     LEFT: 5,
+//     LEFTUP: 6,
+//     /**
+//      * EDirec to vector
+//      * @param {*} direc 
+//      * @return {Vector} direc's vector 
+//      */
+//     getVector: function (direc) {
+//         switch (direc) {
+//             case this.RIGHTUP: return new Vector(1, 1);
+//             case this.RIGHT: return new Vector(2, 0);
+//             case this.RIGHTDOWN: return new Vector(1, -1);
+//             case this.LEFTDOWN: return new Vector(-1, -1);
+//             case this.LEFT: return new Vector(-2, 0);
+//             case this.LEFTUP: return new Vector(-1, 1);
+//             default: return new Vector(0, 0);
+//         }
+//     },
+//     /**
+//      * EDirec to angle
+//      * @param {*} direc 
+//      * @returns {Number} degree angle
+//      */
+//     getAngle: function (direc) {
+//         switch (direc) {
+//             case this.RIGHTUP: return 60;
+//             case this.RIGHT: return 0;
+//             case this.RIGHTDOWN: return 300;
+//             case this.LEFTDOWN: return 240;
+//             case this.LEFT: return 180;
+//             case this.LEFTUP: return 120;
+//             default: return 0;
+//         }
+//     },
+//     /**
+//      * angle to EDirec
+//      * @param {Number} angle 
+//      * @returns {*} matching EDirec
+//      */
+//     getDirec: function (angle) {
+//         if (angle <= -150 || angle >= 150) return this.LEFT;
+//         if (angle > 90) return this.LEFTUP;
+//         if (angle > 30) return this.RIGHTUP;
+//         if (angle < -90) return this.LEFTDOWN;
+//         if (angle < -30) return this.RIGHTDOWN;
+//         return this.RIGHT;
+//     },
+//     /**
+//      * vector to EDirec
+//      * @param {Vector} vec
+//      * @returns {*} matching EDirec 
+//      */
+//     toDirec: function (vec) {
+//         if (vec.x < 0)
+//             return vec.y == 1 ? this.LEFTUP : vec.y == 0 ? this.LEFT : this.LEFTDOWN;
+//         return vec.y == 1 ? this.RIGHTUP : vec.y == 0 ? this.RIGHT : this.RIGHTDOWN;
+//     },
+//     /**
+//      * get all EDirec's Vector
+//      * @returns {[*]} Vector array
+//      */
+//     getAllVectors() {
+//         var arr = [];
+//         for (var i = 1; i <= 6; ++i)
+//             arr.push(this.getVector(i));
+//         return arr;
+//     },
+//     /**
+//      * get all Vectors excluded direc, opposite direc
+//      * @param {*} direc origin EDirec
+//      * @returns {*} other Vector array 
+//      */
+//     getVerticalVectors(direc) {
+//         let vs = this.getAllVectors();
+//         let v1 = this.getVector(direc);
+//         let v2 = this.getVector(direc > 3 ? direc - 3 : direc + 3);
+//         var result = [];
+//         for (let v of vs)
+//             if (!v.equals(v1) && !v.equals(v2))
+//                 result.push(v);
+//         return result;
+//     },
+//     toString: function (direc) {
+//         switch (direc) {
+//             case this.RIGHTUP: return "RIGHTUP";
+//             case this.RIGHT: return "RIGHT";
+//             case this.RIGHTDOWN: return "RIGHTDOWN";
+//             case this.LEFTDOWN: return "LEFTDOWN";
+//             case this.LEFT: return "LEFT";
+//             case this.LEFTUP: return "LEFTUP";
+//             default: return "default";
+//         }
+//     }
+// }
 const ShipType = {
     default: -1,
 
@@ -129,20 +147,20 @@ const TileTypes = {
     Attacked: 1,
     HasBomb: 2,
     HasShip: 3,
-    toString(tileType){
-        str="";
-        switch(tileType){
+    toString(tileType) {
+        str = "";
+        switch (tileType) {
             case this.Normal:
-                str="Normal";
+                str = "Normal";
                 break;
             case this.Attacked:
-                str="Attacked";
+                str = "Attacked";
                 break;
             case this.HasBomb:
-                str="HasBomb";
+                str = "HasBomb";
                 break;
             case this.HasShip:
-                str="HasShip";
+                str = "HasShip";
                 break;
         }
         return str;
@@ -168,7 +186,7 @@ const AttackEventType = {
     Ship: 3,
     SunkenShip: 4
 }
-exports.EDirec = EDirec;
+exports.Directions = Directions;
 exports.ShipType = ShipType;
 exports.ScreenType = ScreenType;
 exports.TileTypes = TileTypes;

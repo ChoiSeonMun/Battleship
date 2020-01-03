@@ -17,14 +17,14 @@ class Map {
         }
     }
     /**
-     * width getter
+     * 맵의 넓이를 반환
      * @returns {Number} width
      */
     getWidth() {
         return this.width;
     }
     /**
-     * height getter
+     * 맵의 높이를 반환
      * @returns {Number} height
      */
     getHeight() {
