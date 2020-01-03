@@ -33,28 +33,28 @@ class Ship {
      * 배의 길이를 반환
      * @returns {Number} length
      */
-    getLength(){
+    getLength() {
         return this.length;
     }
     /**
      * 배의 현재 체력을 반환
      * @returns {Number} health
      */
-    getHealth(){
+    getHealth() {
         return this.health;
     }
     /**
      * 배의 체력을 감소시킴
      */
-    takeDamage(){
+    takeDamage() {
         --this.health;
     }
     /**
      * 배의 침몰 여부를 반환
      * @returns {boolean}
      */
-    isSunken(){
-        return this.health==0;
+    isSunken() {
+        return this.health == 0;
     }
     toString() {
         return `position : (${this.row}, ${this.col}), direction : ${Directions.toString(this.directon)}, health : ${this.health}`;

@@ -1,16 +1,12 @@
 //==============================================
-//add common setting in cc
+//공통 설정과 타입을 cc에 바인딩한다.
 //
-cc.protocol=require("protocol");
-cc.settings=require("settings");
-let types=require("types");
-cc.EDirec = cc.Enum(types.EDirec);
-cc.ShipType = cc.Enum(types.ShipType);
-cc.ScreenType = cc.Enum(types.ScreenType);
-cc.TileType = cc.Enum(types.TileType);
-cc.ZOrder = cc.Enum(types.ZOrder);
-cc.JoinEventType=cc.Enum(types.JoinEventType);
-cc.AttackEventType = cc.Enum(types.AttackEventType);
-cc.ShipInfo=types.ShipInfo;
-cc.ChangedTile=types.ChangedTile;
+cc.protocol = require("protocol");
+cc.settings = require("settings");
+cc.Map = require('./Map');
+cc.Tile = require('./Tile');
+let enums = require("enums");
+cc.Directions = cc.Enum(enums.Directions);
+cc.TileTypes = cc.Enum(enums.TileTypes);
+
 //==============================================
