@@ -2,25 +2,39 @@
 //공통 열거형 정의
 //
 const Directions = {
-    RIGHTUP: 1,
-    RIGHT: 2,
-    RIGHTDOWN: 3,
-    LEFTDOWN: 4,
-    LEFT: 5,
-    LEFTUP: 6,
-    
-    toString: function (direc) {
-        switch (direc) {
-            case this.RIGHTUP: return "RIGHTUP";
-            case this.RIGHT: return "RIGHT";
-            case this.RIGHTDOWN: return "RIGHTDOWN";
-            case this.LEFTDOWN: return "LEFTDOWN";
-            case this.LEFT: return "LEFT";
-            case this.LEFTUP: return "LEFTUP";
-            default: return "default";
+    RightUp: 1,
+    Right: 2,
+    RightDown: 3,
+    LeftDown: 4,
+    Left: 5,
+    LeftUp: 6,
+
+    toString: function (direction) {
+        switch (direction) {
+            case this.RightUp:
+                return "RightUp";
+            case this.Right:
+                return "Right";
+            case this.RightDown:
+                return "RightDown";
+            case this.LeftDown:
+                return "LeftDown";
+            case this.Left:
+                return "Left";
+            case this.LeftUp:
+                return "LeftUp";
+            default:
+                return "default";
         }
     }
 }
 
-exports.Directions = Directions;
+const ShipTypes = {
+    PatrolKiller: 0,
+    Destroyer: 1,
+    Cruiser: 2
+}
+
+module.exports.Directions = Directions;
+module.exports.ShipTypes = ShipTypes;
 //==============================================
