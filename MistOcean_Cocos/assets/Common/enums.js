@@ -8,6 +8,7 @@ const Directions = {
     LEFTDOWN: 4,
     LEFT: 5,
     LEFTUP: 6,
+    
     toString: function (direc) {
         switch (direc) {
             case this.RIGHTUP: return "RIGHTUP";
