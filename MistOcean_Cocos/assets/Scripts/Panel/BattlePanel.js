@@ -1,5 +1,5 @@
 cc.BattlePanel=cc.Class({
-    extends: cc.Component,
+    extends: cc.Panel,
 
     properties: {
         ShipCountLabel: {

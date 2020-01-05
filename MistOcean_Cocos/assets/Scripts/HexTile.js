@@ -13,7 +13,7 @@ cc.HexTile=cc.Class({
     getPos(){
         return this.node.position;
     },
-    isShip: function () {
+    hasShip: function () {
         return this.ship != null;
     },
 

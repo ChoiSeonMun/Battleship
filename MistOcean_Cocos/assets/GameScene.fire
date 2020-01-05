@@ -162,7 +162,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": 341.3022684562133
+      "z": 757.7722283113839
     },
     "_scale": {
       "__type__": "cc.Vec3",
@@ -305,18 +305,15 @@
       "x": 1,
       "y": 3
     },
-    "myName": {
-      "__id__": 8
-    },
-    "enermyName": {
-      "__id__": 122
-    },
-    "buildPanel": {
-      "__id__": 64
-    },
-    "battlePanel": {
-      "__id__": 118
-    },
+    "userName": [
+      {
+        "__id__": 8
+      },
+      {
+        "__id__": 122
+      }
+    ],
+    "panel": [],
     "tileContainer": [
       {
         "__id__": 68
@@ -328,7 +325,10 @@
     "logBox": {
       "__id__": 126
     },
-    "hexTilePrefabs": [
+    "highlightPrefab": {
+      "__uuid__": "8dae9169-c004-45c8-b912-85416389d6ec"
+    },
+    "tilePrefabs": [
       {
         "__uuid__": "2183cacf-2839-412b-9010-2d3a3ca30d10"
       },
@@ -348,15 +348,28 @@
         "__uuid__": "9ad2bdb3-6493-4c2a-8725-27976ddae5a3"
       }
     ],
-    "TileHighlightPrefab": {
-      "__uuid__": "8dae9169-c004-45c8-b912-85416389d6ec"
-    },
-    "ShipBlockPrefab": {
-      "__uuid__": "cef5e304-d84b-4dda-9af0-f76cac780a84"
-    },
-    "ShipPreviewPrefab": {
-      "__uuid__": "d962c457-ad8c-420b-93a1-e1fc84239f02"
-    },
+    "shipPrefabs": [
+      {
+        "__uuid__": "e4b37ff5-95f5-4ab4-909d-07229faf2503"
+      },
+      {
+        "__uuid__": "bae21797-19f1-4e82-9886-34936a92fde3"
+      },
+      {
+        "__uuid__": "fe4ae9c3-ce87-4a92-b070-3bf61bedc8be"
+      }
+    ],
+    "previewPrefabs": [
+      {
+        "__uuid__": "c0e15f6e-7fbe-4ed2-8c0f-ca8e4728a65c"
+      },
+      {
+        "__uuid__": "57c53193-502c-4c99-8d31-0c21e6fcdc69"
+      },
+      {
+        "__uuid__": "d60247a2-f979-49dd-81e6-837322264b77"
+      }
+    ],
     "_id": "7aU0OPCVlNVbzI72H0gCxB"
   },
   {
@@ -449,7 +462,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "My Name",
+    "_name": "Player Name",
     "_objFlags": 0,
     "_parent": {
       "__id__": 11
@@ -1635,7 +1648,7 @@
     "component": "",
     "_componentId": "93c99j0PoROCJS8cmTD+obd",
     "handler": "onSettingButtonClick",
-    "customEventData": "2"
+    "customEventData": "0"
   },
   {
     "__type__": "cc.Node",
@@ -2092,7 +2105,7 @@
     "component": "",
     "_componentId": "93c99j0PoROCJS8cmTD+obd",
     "handler": "onSettingButtonClick",
-    "customEventData": "3"
+    "customEventData": "1"
   },
   {
     "__type__": "cc.Node",
@@ -2549,7 +2562,7 @@
     "component": "",
     "_componentId": "93c99j0PoROCJS8cmTD+obd",
     "handler": "onSettingButtonClick",
-    "customEventData": "4"
+    "customEventData": "2"
   },
   {
     "__type__": "cc.Node",

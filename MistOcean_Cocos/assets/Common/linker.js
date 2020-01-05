@@ -10,5 +10,6 @@ cc.Tile = tile.Tile;
 cc.TileTypes = cc.Enum(tile.TileTypes);
 let enums = require("enums");
 cc.Directions = cc.Enum(enums.Directions);
+cc.ShipTypes = cc.Enum(enums.ShipTypes);
 
 //==============================================

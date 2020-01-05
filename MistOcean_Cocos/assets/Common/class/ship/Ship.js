@@ -1,5 +1,5 @@
-let types = require('../../enums');
-let Directions = types.Directions;
+let enums = require('../../enums');
+let Directions = enums.Directions;
 class Ship {
     /**
      * Ship 생성자
