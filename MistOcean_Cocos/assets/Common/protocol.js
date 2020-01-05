@@ -136,4 +136,4 @@ const protocols = {
 
 }
 
-module.exports = PROTOCOLS;
+module.exports = protocols;

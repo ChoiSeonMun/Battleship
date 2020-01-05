@@ -27,4 +27,4 @@ class Queue {
     }
 }
 
-export default Queue;
+module.exports = Queue;

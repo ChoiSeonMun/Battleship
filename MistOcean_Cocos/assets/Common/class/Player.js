@@ -5,12 +5,22 @@ let TileTypes = require('./tile').TileTypes;
 class Player {
     /**
      * Player 생성자
+     * @param {Socket} socket 유저의 소켓
      * @param {String} nickname 유저 닉네임
      */
-    constructor(nickname) {
+    constructor(socket, nickname) {
+        this.socket = socket;
         this.nickname = nickname;
         this.ships = [];
         this.map = new Map();
+    }
+
+    /**
+     * 플레이어의 소켓을 가져온다.
+     * @returns {Socket} 유저와 연결되어 있는 소켓
+     */
+    get socket() {
+        return this.socket;
     }
 
     /**
