@@ -1,4 +1,4 @@
-let types = require('./types');
+let types = require('../enums');
 let TileTypes = types.TileTypes;
 class Tile {
     /**

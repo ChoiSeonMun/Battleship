@@ -1,4 +1,4 @@
-let types = require('./types');
+let types = require('../../enums');
 let Directions = types.Directions;
 class Ship {
     /**
@@ -57,7 +57,7 @@ class Ship {
         return this.health == 0;
     }
     toString() {
-        return `position : (${this.row}, ${this.col}), direction : ${Directions.toString(this.directon)}, health : ${this.health}`;
+        return `position : (${this.row}, ${this.col}), direction : ${Directions.toString(this.direction)}, health : ${this.health}`;
     }
 }
 module.exports = Ship;
