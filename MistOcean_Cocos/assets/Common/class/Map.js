@@ -1,14 +1,17 @@
-let tile = require('./Tile');
-let Tile = tile.Tile;
-let TileTypes = tile.TileTypes;
+let Tile = require('./tile').Tile;
+let SETTINGS = require('../settings');
+
+// Map 클래스
+// 각 플레이어의 배, 폭탄 등의 배치 상황을 표현한다.
 class Map {
-    constructor(width, height) {
+    /**
+     * Map의 생성자
+     */
+    constructor() {
+        this.width = SETTINGS.WIDTH;
+        this.height = SETTINGS.HEIGHT;
+
         this.representation = [];
-        this.width = width;
-        this.height = height;
-        this.initRepresentation();
-    }
-    initRepresentation() {
         for (let r = 0; r < this.height; ++r) {
             this.representation[r] = [];
             for (let c = 0; c < this.width; ++c) {
@@ -16,29 +19,33 @@ class Map {
             }
         }
     }
+
     /**
-     * 맵의 넓이를 반환
-     * @returns {Number} width
+     * 맵의 너비를 반환
+     * @returns {Number} 맵의 너비
      */
-    getWidth() {
+    get width() {
         return this.width;
     }
+
     /**
      * 맵의 높이를 반환
-     * @returns {Number} height
+     * @returns {Number} 맵의 높이
      */
-    getHeight() {
+    get height() {
         return this.height;
     }
+
     /**
-     * Map이 가지고 있는 타일에 접근
-     * @param {Number} row 
-     * @param {Number} col 
-     * @returns {Tile} Tile
+     * 해당 위치의 Tile을 가져온다.
+     * @param {Number} row 행
+     * @param {Number} col 열
+     * @returns {Tile} 해당 위치의 Tile Reference
      */
     getTile(row, col) {
         return this.representation[row][col];
     }
+
     toString() {
         let str = "";
         for (let r = 0; r < this.height; ++r) {
@@ -50,4 +57,5 @@ class Map {
         return str;
     }
 }
+
 module.exports = Map;

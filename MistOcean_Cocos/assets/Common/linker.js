@@ -3,9 +3,9 @@
 //
 cc.protocol = require("protocol");
 cc.settings = require("settings");
-cc.Player = require('./class/Player');
-let tile = require('./class/Tile');
-cc.Map = require('./class/Map');
+cc.Player = require('./class/player');
+let tile = require('./class/tile');
+cc.Map = require('./class/map');
 cc.Tile = tile.Tile;
 cc.TileTypes = cc.Enum(tile.TileTypes);
 let enums = require("enums");
