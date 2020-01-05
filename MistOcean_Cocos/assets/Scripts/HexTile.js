@@ -16,21 +16,6 @@ cc.HexTile=cc.Class({
     isShip: function () {
         return this.ship != null;
     },
-    isNotSelectable:function(){
-        return this.type!=cc.TileType.Selectable;
-    },
-    isDamagedShip:function(){
-        return this.isShip()&&this.type==cc.TileType.Damaged;
-    },
-    isEnermy:function(){
-        return this.type==cc.TileType.Enermy;
-    },
-    isBomb:function(){
-        return this.type==cc.TileType.Bomb;
-    },
-    isBuild:function(){
-        return this.type==cc.TileType.Build;
-    },
 
     setEvents:function(){
         this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);

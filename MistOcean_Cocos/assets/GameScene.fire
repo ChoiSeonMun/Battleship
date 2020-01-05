@@ -300,8 +300,6 @@
       "__id__": 6
     },
     "_enabled": true,
-    "width": 10,
-    "height": 10,
     "tileMargin": {
       "__type__": "cc.Vec2",
       "x": 1,
@@ -313,11 +311,6 @@
     "enermyName": {
       "__id__": 122
     },
-    "shipCount": [
-      2,
-      2,
-      1
-    ],
     "buildPanel": {
       "__id__": 64
     },
