@@ -14,7 +14,7 @@ const PROTOCOLS = {
     /**
      * 클라이언트에 조인에 대한 응답을 한다.
      * @param {int} type 응답의 타입
-     * @param {*} info 응답에 따른 추가 정보
+     * @param {JSON} info 응답에 따른 추가 정보
      * @returns {string} 생성된 메세지
      */
     joinResponse(type, info = "") {
