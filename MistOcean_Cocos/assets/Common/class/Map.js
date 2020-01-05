@@ -1,6 +1,6 @@
-let types = require('../enums');
-let Tile = require('./Tile');
-let TileTypes = types.TileTypes;
+let tile = require('./Tile');
+let Tile = tile.Tile;
+let TileTypes = tile.TileTypes;
 class Map {
     constructor(width, height) {
         this.representation = [];
@@ -43,9 +43,9 @@ class Map {
         let str = "";
         for (let r = 0; r < this.height; ++r) {
             for (let c = 0; c < this.width; ++c) {
-                str+=this.getTile(r,c).getType()+' ';
+                str += this.getTile(r, c).getType() + ' ';
             }
-            str+='\n';
+            str += '\n';
         }
         return str;
     }

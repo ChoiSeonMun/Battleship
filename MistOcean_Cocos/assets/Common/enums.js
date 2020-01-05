@@ -1,30 +1,6 @@
 //==============================================
 //공통 열거형 정의
 //
-const TileTypes = {
-    Normal: 0,
-    Attacked: 1,
-    HasBomb: 2,
-    HasShip: 3,
-    toString(tileType) {
-        str = "";
-        switch (tileType) {
-            case this.Normal:
-                str = "Normal";
-                break;
-            case this.Attacked:
-                str = "Attacked";
-                break;
-            case this.HasBomb:
-                str = "HasBomb";
-                break;
-            case this.HasShip:
-                str = "HasShip";
-                break;
-        }
-        return str;
-    }
-}
 const Directions = {
     RIGHTUP: 1,
     RIGHT: 2,
@@ -46,5 +22,4 @@ const Directions = {
 }
 
 exports.Directions = Directions;
-exports.TileTypes = TileTypes;
 //==============================================

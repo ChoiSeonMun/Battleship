@@ -1,5 +1,27 @@
-let types = require('../enums');
-let TileTypes = types.TileTypes;
+const TileTypes = {
+    Normal: 0,
+    Attacked: 1,
+    HasBomb: 2,
+    HasShip: 3,
+    toString(tileType) {
+        str = "";
+        switch (tileType) {
+            case this.Normal:
+                str = "Normal";
+                break;
+            case this.Attacked:
+                str = "Attacked";
+                break;
+            case this.HasBomb:
+                str = "HasBomb";
+                break;
+            case this.HasShip:
+                str = "HasShip";
+                break;
+        }
+        return str;
+    }
+}
 class Tile {
     /**
      * Tile 생성자
@@ -55,4 +77,5 @@ class Tile {
         return TileTypes.toString(this.currentType);
     }
 }
-module.exports = Tile;
+module.exports.Tile = Tile;
+module.exports.TileTypes = TileTypes;
