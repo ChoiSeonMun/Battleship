@@ -1,4 +1,4 @@
-cc.PlacePanel=cc.Class({
+cc.PlacePanel = cc.Class({
     extends: cc.Panel,
 
     properties: {
@@ -19,22 +19,9 @@ cc.PlacePanel=cc.Class({
         this.ShipCountLabel[index].string = cnt;
     },
     onSettingButtonClick: function (event, customEventData) {
-        let shipType=parseInt(customEventData);
+        let shipType = parseInt(customEventData);
         cc.GameManager.setShipType(shipType);
-        switch(shipType){
-            case cc.ShipTypes.PatrolKiller:
-                this.ModeLabel.string="소형";
-                break;
-            case cc.ShipTypes.Destroyer:
-                this.ModeLabel.string="중형";
-                break;
-            case cc.ShipTypes.Cruiser:
-                this.ModeLabel.string="대형";
-                break;
-            default:
-                this.ModeLabel.string="default";
-                break;
-        }
+        this.ModeLabel.string = cc.GameManager.getShipSize(shipType);
     },
     onDeleteButtonClick: function (event) {
         cc.GameManager.deleteTargetShip();

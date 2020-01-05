@@ -1,7 +1,7 @@
 // 프로토콜을 위한 Object
 const protocols = {
     // Auto-matching
-    
+
     /**
      * 서버에 조인을 요청한다.
      * @param {String} nickname 클라이언트의 닉네임 
@@ -10,7 +10,7 @@ const protocols = {
     joinRequest(nickname) {
         return JSON.stringify({ nickname: nickname });
     },
-    
+
     /**
      * 클라이언트에 조인에 대한 응답을 한다.
      */
@@ -62,7 +62,7 @@ const protocols = {
     placeCancelRequest(row, col) {
         return JSON.stringify({ row: row, col: col });
     },
-    
+
     /**
      * 배치 요청 혹은 취소 요청에 대해 응답한다.
      */
@@ -86,15 +86,15 @@ const protocols = {
      */
     startEvent(row, col) {
         return JSON.stringify({ row: row, col: col });
-     },
-    
+    },
+
     // Battle
 
     /**
      * 클라이언트에게 턴의 시작을 알린다.
      */
     turnEvent() { },
-    
+
     /**
      * 서버에게 공격을 요청한다.
      * @param {Number} row 공격할 행 번호 
@@ -123,7 +123,7 @@ const protocols = {
     attackResponse(isSucceeded, isBomb) {
         return JSON.stringify({ success: isSucceeded, bomb: isBomb });
     },
-    
+
     /**
      * 승자를 알림으로써 게임을 끝낸다.
      * @param {String} winner 승자
@@ -136,4 +136,4 @@ const protocols = {
 
 }
 
-module.exports = PROTOCOLS;
+module.exports = protocols;

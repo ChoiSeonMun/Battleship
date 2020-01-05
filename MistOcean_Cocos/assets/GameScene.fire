@@ -313,7 +313,12 @@
         "__id__": 122
       }
     ],
-    "panel": [],
+    "panel": [
+      {
+        "__id__": 64
+      },
+      null
+    ],
     "tileContainer": [
       {
         "__id__": 68
@@ -657,7 +662,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Build Panel",
+    "_name": "Place Panel",
     "_objFlags": 0,
     "_parent": {
       "__id__": 12

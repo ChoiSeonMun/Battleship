@@ -97,6 +97,22 @@ cc.Class({
         return pos;
     },
     /**
+     * shiptype을 받아 크기를 텍스트로 반환
+     * @param {cc.ShipTypes} shipType 
+     */
+    getShipSize(shipType) {
+        switch (shipType) {
+            case cc.ShipTypes.PatrolKiller:
+                return "소형";
+            case cc.ShipTypes.Destroyer:
+                return "중형";
+            case cc.ShipTypes.Cruiser:
+                return "대형";
+            default:
+                return "default"
+        }
+    },
+    /**
      * get EDirec of origin to forward vector 
      * @param {cc.Vec2} origin start pos
      * @param {cc.Vec2} forward end pos
@@ -145,24 +161,24 @@ cc.Class({
         for (let direction of cc.Directions.getAllDirections()) {
             let v = cc.Directions.toVector(direction);
             let row = R + v[0];
-            let col = C = v[1];
+            let col = C + v[1];
             if (this.isInRange(row, col) && placeTiles[row][col].hasShip())
                 return false;
         }
         return true;
     },
     /**
-     * get whether each tiles under ship is valid
-     * @param {Number} R rows
-     * @param {Number} C cols
-     * @param {cc.ShipTypes} type ship type
-     * @param {cc.EDirec} direc  ship direction
-     * @returns {boolean} the ship is valid
+     * R,C 위치에 type형 배를 direction 방향으로 놓을 수 있는지 검사한다.
+     * @param {Number} R 
+     * @param {Number} C 
+     * @param {cc.ShipTypes} type 
+     * @param {cc.EDirec} direction  
+     * @returns {boolean} 
      */
-    isValidShip(R, C, type, direc) {
-        let step = cc.EDirec.getVector(direc);
-        for (let i = 0; i < type; ++i) {
-            if (!this.isValidTile(R + step.y * i, C + step.x * i))
+    isValidShip(R, C, type, direction) {
+        let step = cc.Directions.toVector(direction);
+        for (let i = 0; i < type + 2; ++i) {
+            if (!this.isValidTile(R + step[0] * i, C + step[1] * i))
                 return false;
         }
         return true;
@@ -268,9 +284,11 @@ cc.Class({
         this.target = null;
         this.highlight = null;
         this.shipPreview = null;
+        this.temporaryShip = null;
         this.currentScreen = UserTypes.Player;
         this.currentShipType = cc.ShipTypes.PatrolKiller;
         this.currentDirection = cc.Directions.Right;
+        this.wait = false;
         this.ready = false;
         this.turn = false;
     },
@@ -311,9 +329,8 @@ cc.Class({
     showShipPreview() {
         let R = this.target.R;
         let C = this.target.C;
-        if (!this.isValidTile(R, C))
+        if (!this.isValidTile(R, C) || this.shipCount[this.currentShipType] <= 0)
             return;
-        console.log(this.currentShipType)
         this.shipPreview = cc.instantiate(this.previewPrefabs[this.currentShipType]);
         this.shipPreview.zIndex = cc.ZOrder.Preview;
         this.shipPreview.setPosition(this.target.getPos());
@@ -334,30 +351,26 @@ cc.Class({
             this.shipPreview.destroy();
         this.shipPreview = null;
     },
-    placeRequest(){
-        
-    },
-    //spawn ship on target position
-    spawnShip() {
-        let R = this.target.R;
-        let C = this.target.C;
+    /**
+     * 배를 배치하고 서버에 배의 정보를 보낸다.
+     */
+    placeRequest() {
+        let row = this.target.R;
+        let col = this.target.C;
+        let shipType = this.currentShipType;
         let direction = this.currentDirection;
-        let type = this.currentShipType;
-        let step = cc.Directions.toVector(direction);
-        let shipPrefab = this.shipPrefabs[type];
-        if (!this.isValidShip(R, C, type, direction))
+        if (!this.isValidShip(row, col, shipType, direction) || this.shipCount[this.shipType] <= 0)
             return;
-        let ship = cc.instantiate(shipPrefab).getComponent("Ship");
-        this.tileContainer[this.currentScreen - 1].addChild(ship.node);
-        ship.init(R, C, type, direc);
-        this.buildPanel.setShipCount(shipIndex, --this.shipCount[shipIndex]);
-        this.shipInfos.push(ship.info);
-        this.log(cc.ShipTypes.toString(type) + "선이 배치되었습니다.");
-
-        for (let i = 0; i < type; ++i)
-            this.playerTiles[R + step.y * i][C + step.x * i].ship = ship;
-        this.deselectTile();
+        let shipInfo = cc.instantiate(this.shipPrefabs[shipType]).getComponent(cc.ShipInfo);
+        shipInfo.init(row, col, direction);
+        this.tileContainer[UserTypes.Player].addChild(shipInfo.node);
+        this.panel[PanelTypes.Place].setShipCount(shipType, --this.shipCount[shipType]);
+        let step = cc.Directions.toVector(direction);
+        for (let i = 0; i < shipType + 2; ++i)
+            this.tiles[UserTypes.Player][row + step[0] * i][col + step[1] * i].ship = shipInfo;
+        this.log(this.getShipSize(shipType) + "선이 배치되었습니다.");
     },
+
     deselectTile() {
         if (this.highlight != null)
             this.highlight.destroy();
