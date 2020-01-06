@@ -1,3 +1,4 @@
+require('./Panel');
 cc.PlacePanel = cc.Class({
     extends: cc.Panel,
 

@@ -1,3 +1,4 @@
+require('./Panel/Panel');
 const UserTypes = {
     Player: 0,
     Enermy: 1
