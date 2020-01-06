@@ -1,4 +1,4 @@
-let Ship = require('./ship');
+let Ship = require('./ship/Ship');
 let Map = require('./map');
 let TileTypes = require('./tile').TileTypes;
 

@@ -75,10 +75,10 @@ cc.Class({
         logbox.height = logs.node.height + 160;
     },
     /**
-     * get client size of tile on (R,C)
-     * @param {Number} R tile rows
-     * @param {Number} C tile cols
-     * @returns {cc.Vec2} client position
+     * R,C 위치의 타일의 position을 반환한다.
+     * @param {Number} R
+     * @param {Number} C
+     * @returns {cc.Vec2}
      */
     getTilePos(R, C) {
         let x = parseInt(C * this.DX / 2 + this.DX / 2) + this.tileMargin.x;
@@ -86,9 +86,9 @@ cc.Class({
         return cc.v2(x, y);
     },
     /**
-     * get client size of point
-     * @param {cc.Vec2} pos point on screen
-     * @returns {cc.Vec2} client position
+     * 절대위치를 tileContainer의 상대위치로 변환한다.
+     * @param {cc.Vec2} pos
+     * @returns {cc.Vec2}
      */
     toClientPos(pos) {
         let view = this.tileContainer[0].parent;
@@ -113,10 +113,10 @@ cc.Class({
         }
     },
     /**
-     * get EDirec of origin to forward vector 
-     * @param {cc.Vec2} origin start pos
-     * @param {cc.Vec2} forward end pos
-     * @returns {cc.EDirec} direction
+     * origin->forward 벡터의 방향을 Directions 중 하나로 반환한다.
+     * @param {cc.Vec2} origin
+     * @param {cc.Vec2} forward
+     * @returns {cc.Directions} cc.Directions
      */
     getDirection(origin, forward) {
         let angle = Math.atan2(forward.y - origin.y, forward.x - origin.x) * 180 / Math.PI;
@@ -175,7 +175,7 @@ cc.Class({
      * @param {cc.EDirec} direction  
      * @returns {boolean} 
      */
-    isValidShip(R, C, type, direction) {
+    canPlaceShip(R, C, type, direction) {
         let step = cc.Directions.toVector(direction);
         for (let i = 0; i < type + 2; ++i) {
             if (!this.isValidTile(R + step[0] * i, C + step[1] * i))
@@ -184,10 +184,10 @@ cc.Class({
         return true;
     },
     /**
-     * get wehther all ships are placed 
-     * @returns {boolean} all ship is placed
+     * 모든 배가 배치되었는지 검사한다. 
+     * @returns {boolean}
      */
-    allPlace() {
+    isCompleted() {
         return this.shipCount[0] + this.shipCount[1] + this.shipCount[2] == 0;
     },
     /**
@@ -227,27 +227,29 @@ cc.Class({
     },
     //----------------------------------------//
     //game event handler
-    //
-    //event when first tile clicked
+    /**
+     * 터치된 타일을 선택한다.
+     * @param {*} event touchEvent
+     */
     onTouchStart(event) {
         let hex = event.target.getComponent("HexTile");
         if (hex != null)
             cc.GameManager.selectTile(hex);
     },
-    //event when tile drag after click
+    //Place Phase에서 커서 방향으로 방향을 갱신한다.
     onTouchMove(event) {
         if (cc.GameManager.shipPreview == null)
             return;
         cc.GameManager.updateCursorDirec(event.touch.getLocation());
     },
-    //event when click end in outside of tile
+    //Place Phase에서 한칸 이상 떨어진 타일에서 터치를 종료할 때 PlaceRequest를 요청한다.
     onTouchCancel(event) {
         if (cc.GameManager.shipPreview == null)
             return;
         cc.GameManager.coverShipPreview();
         cc.GameManager.placeRequest();
     },
-    //event when click end in inside of tile
+    //Place Phase에서 터치가 타일을 벗어나지 않고 종료될 때 preview를 가린다.
     onTouchEnd(event) {
         if (cc.GameManager.shipPreview == null)
             return;
@@ -268,7 +270,7 @@ cc.Class({
         this.userName[UserTypes.Player].string = cc.nickname;
         this.userName[UserTypes.Enermy].string = cc.enermyName;
         this.log("게임이 시작되었습니다.");
-        //cc.Socket.on("enermyReady", this.enermyReadyHandler);
+        //cc.Socket.on("readyEvent", this.readyEventHandler);
     },
     /**
      * 변수 선언
@@ -311,12 +313,17 @@ cc.Class({
             }
         }
     },
-    //select tile and show preview if place phase
     selectTile(tile) {
         this.target = tile;
         this.showTileHighlight();
         if (this.currentScreen == UserTypes.Player)
             this.showShipPreview();
+    },
+    deselectTile() {
+        if (this.highlight != null)
+            this.highlight.destroy();
+        this.highlight = null;
+        this.target = null;
     },
     showTileHighlight() {
         if (this.highlight == null) {
@@ -359,7 +366,9 @@ cc.Class({
         let col = this.target.C;
         let shipType = this.currentShipType;
         let direction = this.currentDirection;
-        if (!this.isValidShip(row, col, shipType, direction) || this.shipCount[this.shipType] <= 0)
+        if (this.wait ||
+            !this.canPlaceShip(row, col, shipType, direction) ||
+            this.shipCount[this.shipType] <= 0)
             return;
         let shipInfo = cc.instantiate(this.shipPrefabs[shipType]).getComponent(cc.ShipInfo);
         shipInfo.init(row, col, direction);
@@ -369,31 +378,35 @@ cc.Class({
         for (let i = 0; i < shipType + 2; ++i)
             this.tiles[UserTypes.Player][row + step[0] * i][col + step[1] * i].ship = shipInfo;
         this.log(this.getShipSize(shipType) + "선이 배치되었습니다.");
+        //this.wait=true;
+        //cc.Socket.on("placeResponse",this.placeResponseHandler);
+        //cc.Socket.emit('placeRequest', cc.protocol.placeRequest(shipType, row, col, direction));
     },
-
-    deselectTile() {
-        if (this.highlight != null)
-            this.highlight.destroy();
-        this.highlight = null;
-        this.target = null;
-    },
-    deleteTargetShip() {
-        if (this.target != null && this.target.ship != null)
+    /**
+     * 배를 배치를 취소하고 서버에 취소한 위치를 보낸다.
+     */
+    placeCancelRequest() {
+        if (this.wait || this.target == null || !this.target.hasShip())
             return;
         let ship = this.target.ship;
-        let shipIndex = ship.info.type - 2;
-        let step = cc.EDirec.getVector(ship.info.direc);
-        for (let i = 0; i < ship.info.type; ++i)
-            this.playerTiles[ship.info.R + step.y * i][ship.info.C + step.x * i].ship = null;
-        this.buildPanel.setShipCount(shipIndex, ++this.shipCount[shipIndex]);
-        this.shipInfos.splice(this.shipInfos.indexOf(ship.info), 1);
-        this.log(cc.ShipTypes.toString(ship.info.type) + "선이 제거되었습니다.");
+        let step = cc.Directions.toVector(ship.direction);
+        for (let i = 0; i < ship.type + 2; ++i)
+            this.tiles[UserTypes.Player][ship.row + step[0] * i][ship.col + step[1] * i].ship = null;
+        this.panel[PanelTypes.Place].setShipCount(ship.type, ++this.shipCount[ship.type]);
+        this.log(this.getShipSize(ship.type) + "선이 제거되었습니다.");
         ship.node.destroy();
         this.deselectTile();
+        //this.wait=true;
+        //cc.Socket.on("placeResponse",this.placeResponseHandler);
+        //cc.Socket.emit('placeCancelRequest', cc.protocol.placeCancelRequest(ship.row, ship.col));
     },
-    //send 'placeDone' to server and disable build events
-    buildComplete() {
-        if (!this.allPlace()) {
+    /**
+     * 배치를 완료하고 서버에 알린다.
+     */
+    placeDone() {
+        if (this.wait)
+            return;
+        if (!this.isCompleted()) {
             this.log("배치가 완료해주세요.");
             return;
         }
@@ -402,28 +415,32 @@ cc.Class({
             return;
         }
         this.ready = true;
-        this.listenEvents();
-        cc.Socket.emit('placeDone', cc.protocol.placeDone(this.shipInfos));
         this.deselectTile();
+        //this.listenEvents();
+        //cc.Socket.emit('placeDone', cc.protocol.placeDone(this.shipInfos));
+        this.setBomb(0,0);
         this.disableBuildEvents();
     },
     listenEvents() {
-        cc.Socket.on('placeResponse', this.placeResponseHandler);
         cc.Socket.on('startEvent', this.startEventHandler);
         cc.Socket.on('turnEvent', this.turnEventHandler);
         cc.Socket.on('attackEvent', this.attackEventHandler);
     },
     disableBuildEvents() {
-        let target = this.tileContainer[cc.ScreenType.Build - 1];
+        let target = this.tileContainer[UserTypes.Player];
         target.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
         target.off(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, target);
         target.off(cc.Node.EventType.TOUCH_CANCEL, this.onTouchCancel, target);
         target.off(cc.Node.EventType.TOUCH_END, this.onTouchEnd, target);
     },
-    //set bomb in playerTiles
-    setBomb(bombpos) {
-        this.log(`폭탄이 설치되었습니다.${bombpos.R},${bombpos.C}`);
-        this.changeTile(bombpos.R, bombpos.C, cc.TileType.Bomb);
+    /**
+     * row, col 위치에 폭탄을 배치한다.
+     * @param {Number} row 
+     * @param {Number} col 
+     */
+    setBomb(row, col) {
+        this.log(`폭탄이 설치되었습니다.`);
+        this.changeTile(row, col, TilePrefabTypes.Bomb, UserTypes.Player);
 
     },
     changeBattlePhase() {
@@ -482,15 +499,17 @@ cc.Class({
     //----------------------------------------//
     //place event handler
     //
-    placeResponseHandler(json) {
-        cc.GameManager.setBomb(JSON.parse(json));
+    placeResponseHandler() {
+        cc.GameManager.wait = false;
         cc.Socket.off("placeResponse", cc.GameManager.placeResponseHandler);
     },
-    enermyReadyHandler() {
+    readyEventHandler() {
         cc.GameManager.log("상대가 배치를 완료했습니다.");
         cc.Socket.off("enermyReady", cc.GameManager.enermyReadyHandler);
     },
-    startEventHandler() {
+    startEventHandler(json) {
+        pos=JSON.parse(json);
+        cc.GameManager.setBomb(pos.row,pos.col);
         cc.GameManager.changeBattlePhase();
         cc.Socket.off("startEvent", cc.GameManager.startEventHandler);
     },

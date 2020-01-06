@@ -1,4 +1,4 @@
-let Ship = require('./ship');
+let Ship = require('./Ship');
 
 class Destroyer extends Ship {
     /**

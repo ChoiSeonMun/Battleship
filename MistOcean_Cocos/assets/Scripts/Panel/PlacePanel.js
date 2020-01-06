@@ -20,13 +20,13 @@ cc.PlacePanel = cc.Class({
     },
     onSettingButtonClick: function (event, customEventData) {
         let shipType = parseInt(customEventData);
-        cc.GameManager.setShipType(shipType);
         this.ModeLabel.string = cc.GameManager.getShipSize(shipType);
+        cc.GameManager.setShipType(shipType);
     },
     onDeleteButtonClick: function (event) {
-        cc.GameManager.deleteTargetShip();
+        cc.GameManager.placeCancelRequest();
     },
     onStartButtonClick: function () {
-        cc.GameManager.buildComplete();
+        cc.GameManager.placeDone();
     },
 });
