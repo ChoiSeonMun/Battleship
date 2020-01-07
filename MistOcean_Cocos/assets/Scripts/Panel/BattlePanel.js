@@ -28,6 +28,6 @@ cc.BattlePanel = cc.Class({
         this.FieldLabel.string = (this.FieldLabel.string == "상대 필드") ? "내 필드" : "상대 필드";
     },
     onAttackButtonClick() {
-        cc.GameManager.attackTarget();
+        cc.GameManager.attackRequest();
     },
 });

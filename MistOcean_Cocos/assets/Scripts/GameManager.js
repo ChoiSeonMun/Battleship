@@ -214,12 +214,12 @@ cc.Class({
     changeContainer() {
         switch (this.currentScreen) {
             case UserTypes.Player:
-                this.currentScreen = UserTypes.Player;
+                this.currentScreen = UserTypes.Enermy;
                 this.tileContainer[UserTypes.Player].x = -884;
                 this.tileContainer[UserTypes.Enermy].x = 0;
                 break;
             case UserTypes.Enermy:
-                this.currentScreen = UserTypes.Enermy;
+                this.currentScreen = UserTypes.Player;
                 this.tileContainer[UserTypes.Player].x = 0;
                 this.tileContainer[UserTypes.Enermy].x = 884;
                 break;
@@ -382,6 +382,7 @@ cc.Class({
         //this.wait=true;
         //cc.Socket.on("placeResponse",this.placeResponseHandler);
         //cc.Socket.emit('placeRequest', cc.protocol.placeRequest(shipType, row, col, direction));
+        //
     },
     /**
      * 배를 배치를 취소하고 서버에 취소한 위치를 보낸다.
@@ -399,7 +400,7 @@ cc.Class({
         this.deselectTile();
         //this.wait=true;
         //cc.Socket.on("placeResponse",this.placeResponseHandler);
-        //cc.Socket.emit('placeCancelRequest', cc.protocol.placeCancelRequest(ship.row, ship.col));
+        cc.Socket.emit('placeCancelRequest', cc.protocol.placeCancelRequest(ship.row, ship.col));
     },
     /**
      * 배치를 완료하고 서버에 알린다.
@@ -417,10 +418,13 @@ cc.Class({
         }
         this.ready = true;
         this.deselectTile();
-        //this.listenEvents();
-        //cc.Socket.emit('placeDone', cc.protocol.placeDone(this.shipInfos));
-        this.setBomb(0,0);
         this.disableBuildEvents();
+        //this.listenEvents();
+        //cc.Socket.emit('placeDone');
+        this.setBomb(0, 0);
+        this.changeBattlePhase();
+        this.turnStart();
+        //
     },
     listenEvents() {
         cc.Socket.on('startEvent', this.startEventHandler);
@@ -446,15 +450,15 @@ cc.Class({
     },
     changeBattlePhase() {
         this.log("전투가 시작됩니다.");
-        this.buildPanel.node.setPosition(cc.v2(-884, 0));
-        this.battlePanel.node.setPosition(cc.v2(0, 0));
+        this.panel[PanelTypes.Place].node.setPosition(cc.v2(-884, 0));
+        this.panel[PanelTypes.Battle].node.setPosition(cc.v2(0, 0));
         this.changeContainer();
         this.shipCount = cc.settings.SHIP_COUNT.slice();
         this.enableBattleEvents();
-        this.battlePanel.setTurn(false);
+        this.panel[PanelTypes.Battle].setTurn(false);
     },
     enableBattleEvents() {
-        let target = this.tileContainer[cc.ScreenType.Battle - 1];
+        let target = this.tileContainer[UserTypes.Enermy];
         target.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, target);
     },
     disableBattleEvents() {
@@ -464,37 +468,49 @@ cc.Class({
     turnStart() {
         this.log("당신의 차례입니다.");
         this.turn = true;
-        this.battlePanel.setTurn(true);
+        this.panel[PanelTypes.Battle].setTurn(true);
     },
-    attackTarget() {
+    attackRequest() {
         if (!this.turn) {
             this.log("당신의 차례가 아닙니다.");
             return;
         }
-        if (this.target.type != cc.TileType.Selectable)
+        if (this.target.type != TilePrefabTypes.EnermyNormal)
             return;
         this.turn = false;
-        this.battlePanel.setTurn(false);
-        cc.Socket.on('attackResponse', this.attackResponseHandler);
-        cc.Socket.emit('attackRequest', cc.protocol.attackRequest(this.target.R, this.target.C));
+        this.panel[PanelTypes.Battle].setTurn(false);
+        //cc.Socket.on('attackResponse', this.attackResponseHandler);
+        //cc.Socket.emit('attackRequest', cc.protocol.attackRequest(this.target.R, this.target.C));
         this.deselectTile();
     },
-    printAttackLog(type, myturn) {
+    printAttackLog(type, userType) {
+        let isPlayer = (userType == UserTypes.Player);
         switch (type) {
             case cc.AttackEventType.None:
-                this.log(myturn ? "공격을 실패했습니다." : "공격을 회피했습니다."); return;
+                this.log(isPlayer ? "공격을 실패했습니다." : "공격을 회피했습니다."); return;
             case cc.AttackEventType.Bomb:
-                this.log(myturn ? "폭탄을 공격했습니다." : "폭탄이 폭발했습니다."); return;
+                this.log(isPlayer ? "폭탄을 공격했습니다." : "폭탄이 폭발했습니다."); return;
             case cc.AttackEventType.Ship:
-                this.log(myturn ? "배를 공격했습니다!" : "배를 공격당했습니다!"); return;
+                this.log(isPlayer ? "배를 공격했습니다!" : "배를 공격당했습니다!"); return;
             case cc.AttackEventType.SunkenShip:
-                this.log(myturn ? "배를 침몰시켰습니다!" : "배가 침몰했습니다!"); return;
+                this.log(isPlayer ? "배를 침몰시켰습니다!" : "배가 침몰했습니다!"); return;
             default:
         }
     },
-    updateTiles(changed, mytile) {
-        for (let tile of changed)
-            this.changeTile(tile.R, tile.C, tile.mytile ? cc.types.TileType.Enermy : tile.type, mytile);
+    updateTiles(changed, userType) {
+        let isPlayer = (userType == UserTypes.Player);
+        for (let tile of changed) {
+            let tileType;
+            if (isPlayer)
+                tileType = TilePrefabTypes.Enermy;
+            else if (tile.type = cc.TileTypes.Attacked)
+                tileType = TilePrefabTypes.EnermyAttacked;
+            else if (tile.type = cc.TileTypes.HasBomb)
+                tileType = TilePrefabTypes.Bomb;
+            else if (tile.type = cc.TileTypes.HasShip)
+                tileType = TilePrefabTypes.EnermyShip;
+            this.changeTile(tile.row, tile.col, tileType, userType);
+        }
     },
     gameover(winner) { },
     //----------------------------------------//
@@ -509,8 +525,8 @@ cc.Class({
         cc.Socket.off("enermyReady", cc.GameManager.enermyReadyHandler);
     },
     startEventHandler(json) {
-        pos=JSON.parse(json);
-        cc.GameManager.setBomb(pos.row,pos.col);
+        pos = JSON.parse(json);
+        cc.GameManager.setBomb(pos.row, pos.col);
         cc.GameManager.changeBattlePhase();
         cc.Socket.off("startEvent", cc.GameManager.startEventHandler);
     },
@@ -522,17 +538,17 @@ cc.Class({
     },
     attackResponseHandler(json) {
         let data = JSON.parse(json);
-        cc.GameManager.printAttackLog(data.type, true);
+        cc.GameManager.printAttackLog(data.type, UserTypes.Player);
         cc.GameManager.battlePanel.setShipCount(data.remainEnermy);
-        cc.GameManager.updateTiles(data.changed_tiles, false);
+        cc.GameManager.updateTiles(data.changedTiles, UserTypes.Enermy);
         cc.Socket.off('attackResponse', cc.GameManager.attackResponseHandler);
 
     },
     attackEventHandler(json) {
         let data = JSON.parse(json);
-        cc.GameManager.printAttackLog(data.type, false);
-        cc.GameManager.battlePanel.setShipCount(data.remain_ship);
-        cc.GameManager.updateTiles(data.changed_tiles, true);
+        cc.GameManager.printAttackLog(data.type, UserTypes.Enermy);
+        cc.GameManager.battlePanel.setShipCount(data.remainShip);
+        cc.GameManager.updateTiles(data.changed_tiles, UserTypes.Player);
     },
     gameOverHandler(json) {
         let winner = JSON.parse(json).winner;

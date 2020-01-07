@@ -44,7 +44,7 @@ const protocols = {
      * @param {Directions} direction 
      * @returns {String} 생성된 메세지
      */
-    placeResquest(type, row, col, direction) {
+    placeRequest(type, row, col, direction) {
         return JSON.stringify({
             type: type,
             row: row,
