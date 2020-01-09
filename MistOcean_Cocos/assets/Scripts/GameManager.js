@@ -41,6 +41,10 @@ cc.Class({
             default: null,
             type: cc.ScrollView
         },
+        logPrefab: {
+            default: null,
+            type: cc.Prefab
+        },
         highlightPrefab: {
             default: null,
             type: cc.Prefab,
@@ -69,11 +73,10 @@ cc.Class({
     log(msg, sender = "System") {
         let d = new Date();
         let timestamp = "[" + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "] ";
-        let logbox = this.logBox.node.children[1].children[0];
-        let logs = logbox.children[0]._components[0];
-        let log = timestamp + sender + " : " + msg + "\n";
-        logs.string = log + logs.string;
-        logbox.height = logs.node.height + 160;
+        let logstr = timestamp + sender + " : " + msg;
+        this.logBox.newLog = cc.instantiate(this.logPrefab);
+        this.logBox.newLog.getComponent(cc.Label).string = logstr;
+        this.logBox.isUpdate = true;
     },
     /**
      * R,C 위치의 타일의 position을 반환한다.
@@ -259,6 +262,17 @@ cc.Class({
     //----------------------------------------//
     //게임 로직
     //
+    update() {
+        if (this.logBox.isUpdate) {
+            let others = this.logBox.others;
+            let newLog = this.logBox.newLog;
+            newLog.y=-others.y;
+            others.y+=newLog.height;
+            this.logBox.contents.height+=newLog.height;
+            others.addChild(newLog);
+            this.logBox.isUpdate = false;
+        }
+    },
     onLoad() {
         cc.GameManager = this;
         this.declareVariable();
@@ -277,6 +291,11 @@ cc.Class({
      * 변수 선언
      */
     declareVariable() {
+        this.logBox.contents = this.logBox.node.children[1].children[0];
+        this.logBox.others = this.logBox.contents.children[0];
+        this.logBox.isUpdate = false;
+        this.logBox.recentLog = null;
+        this.logBox.newLog = null;
         let tile = this.tilePrefabs[TilePrefabTypes.PlayerNormal].data;
         this.width = cc.settings.WIDTH;
         this.height = cc.settings.HEIGHT;
